@@ -1,0 +1,3 @@
+Clear
+  
+ read (path);
