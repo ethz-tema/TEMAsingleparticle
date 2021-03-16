@@ -33,7 +33,7 @@ You need to run the Setup.exe file form the package to installed “NanoFInder.e
 
 3.	Workflow
 
-For better understanding we represent a simple example of two data files we already collect. One sample has only gold particle and the other one has Gold and silver core-shell particles. The data files are as Comma separated value (csv) But you could also use Tofwerk icpTOF HDF5 (.h5).
+For better understanding we represent a simple example of two data files we already collect. One sample has only gold particle and the other one has Gold and silver core-shell particles. The data files are as Comma separated value (csv) But you could also use Tofwerk icpTOF HDF5(.h5).
 
 To run this program:
 a)	Place a meta_data_excel_file (MDEF) to the same directory as your raw data files.
