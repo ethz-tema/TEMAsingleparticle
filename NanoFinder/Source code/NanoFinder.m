@@ -350,9 +350,9 @@ classdef NanoFinder < matlab.apps.AppBase
                     drawnow
                     saveas(f2,'Processing data AIO.pdf')
                     
-                    slop=nl(ig,2);
+                    slope=nl(ig,2);
                     incp=nl(ig,3);
-                    slops=nl(ig,5);
+                    slopes=nl(ig,5);
                     incps=nl(ig,6);
                     sumnpp=[];
                     size_data=size(Total_sample);
@@ -362,10 +362,10 @@ classdef NanoFinder < matlab.apps.AppBase
                     lamda=reshape(lamda,[],tcsize(1));
                     lamda(lamda<0)=0;
                     %lamda=Completed_newlamda;
-                    Sc=lamda+(slop*sqrt(lamda))+incp;%be carful Sc is included lamda so it not Lc
+                    Sc=lamda+(slope*sqrt(lamda))+incp;%be carful Sc is included lamda so it not Lc
                     Sc(Sc<limit)=limit;
                     Sc=reshape(Sc,[],tcsize(1));
-                    Scs=lamda+(slops'.*sqrt(lamda))+incps';
+                    Scs=lamda+(slopes'.*sqrt(lamda))+incps';
                     Scs(Scs<limit)=limit;
                     Scs=reshape(Scs,[],tcsize(1));
                     for ja=1:tcsize(1)
