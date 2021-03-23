@@ -4,7 +4,7 @@ Open-source license (http://doi.org/10.5905/ethz-1007-363)
 
  1.	Introduction
  
-NanoFinder program designed for the sp-ICP-TOFMS user who wants to analysis transient signal (normally Nanoparticle, droplet or cell) for multi element and multi transient events simultaneously. For simplicity we going to stick to nanoparticle signal from now on here, however the same principle are also true for other transient signal. For the better understanding of the terms and abbreviations please refer to our publications listed at the end.<sup>1-3</sup>
+NanoFinder program designed for the sp-ICP-TOFMS user who wants to analysis transient signal (normally Nanoparticle, droplet or cell) for multi element and multi transient events simultaneously. For simplicity we going to stick to nanoparticle signal from now on here, however the same principle are also true for other transient signal. For the better understanding of the terms and abbreviations please refer to our publications listed at the end.<sup>1-4</sup>
 In order to achieve the full picture, the raw data have to goes through 5 
 Detection:
 a)	Select elements and isotopes of interest, generate time traces of selected elements
@@ -46,7 +46,7 @@ g)	Result are save in the same directory with different file extension such xlsx
 
 References:
 
-1.	A. Gundlach-Graham, L. Hendriks, K. Mehrabi and D. Gunther, Monte Carlo Simulation of Low-Count Signals in Time-of-Flight Mass Spectrometry and Its Application to Single-Particle Detection, Anal. Chem., 2018, 90, 11847-11855.
-2.	A. Gundlach-Graham and K. Mehrabi, Monodisperse microdroplets: a tool that advances single-particle ICP-MS measurements, J. Anal. At. Spectrom., 2020, 35, 1727-1739.
-3.	K. Mehrabi, D. Gunther and A. Gundlach-Graham, Single-particle ICP-TOFMS with online microdroplet calibration for the simultaneous quantification of diverse nanoparticles in complex matrices, Environmental Science-Nano, 2019, 6, 3349-3358.
-
+1. K. Mehrabi, R. Kaegi, D. Gunther and A. Gundlach-Graham, Emerging investigator series: Automated Single-Nanoparticle Quantification and Classification: A Holistic Study of Particles into and out of Wastewater Treatment Plants in Switzerland, Environ. Sci.: Nano, 2021, DOI: 10.1039/D0EN01066A.
+2. A. Gundlach-Graham, L. Hendriks, K. Mehrabi and D. Gunther, Monte Carlo Simulation of Low-Count Signals in Time-of-Flight Mass Spectrometry and Its Application to Single-Particle Detection, Anal. Chem., 2018, 90, 11847-11855.
+3. A. Gundlach-Graham and K. Mehrabi, Monodisperse microdroplets: a tool that advances single-particle ICP-MS measurements, J. Anal. At. Spectrom., 2020, 35, 1727-1739.
+4. K. Mehrabi, D. Gunther and A. Gundlach-Graham, Single-particle ICP-TOFMS with online microdroplet calibration for the simultaneous quantification of diverse nanoparticles in complex matrices, Environmental Science-Nano, 2019, 6, 3349-3358.
