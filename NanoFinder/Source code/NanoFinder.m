@@ -610,9 +610,9 @@ classdef NanoFinder < matlab.apps.AppBase
                     xlswrite(filed,tc',tsum{i,1},'B1');
                     xlswrite(filed,tn(:,1),tsum{i,1},'A1');
                     xr = squeeze(sumdata(i-1,:,:));
-                    if tcsize(1)==1
-                        xr=xr';
-                    end
+                    %if tcsize(1)==1
+                    %    xr=xr';
+                    %end
                     xlswrite(filed,xr,tsum{i,1},'B2');
                     
                     Y=Y+(20/tsumsize(1));
