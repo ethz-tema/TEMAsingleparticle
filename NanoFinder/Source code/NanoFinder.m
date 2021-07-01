@@ -2,35 +2,35 @@
     % GitHub repository of the program: https://github.com/ethz-tema/TEMAsingleparticle
     % Email: kamyarm@ethz.ch
     % Release date 2021.03.01
-    % Version NanoFinder V4.2
+    % Version NanoFinder V5.6
     % Open access licence by ETH Zürich
-
-classdef NanoFinder < matlab.apps.AppBase
     
+    classdef NanoFinder < matlab.apps.AppBase
+
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
         SummarySwitchLabel              matlab.ui.control.Label
         SummarySwitch                   matlab.ui.control.Switch
         RunButton                       matlab.ui.control.Button
-        Integration_windowEditFieldLabel  matlab.ui.control.Label
-        Integration_windowEditField     matlab.ui.control.NumericEditField
-        Least_countEditFieldLabel       matlab.ui.control.Label
-        Least_countEditField            matlab.ui.control.NumericEditField
-        NanoparticletonoiseEditFieldLabel  matlab.ui.control.Label
-        NanoparticletonoiseEditField    matlab.ui.control.NumericEditField
-        Smooth_windowEditFieldLabel     matlab.ui.control.Label
-        Smooth_windowEditField          matlab.ui.control.NumericEditField
-        StartdatapointrownumberEditFieldLabel  matlab.ui.control.Label
-        StartdatapointrownumberEditField  matlab.ui.control.NumericEditField
-        InputdataformatDropDownLabel    matlab.ui.control.Label
-        InputdataformatDropDown         matlab.ui.control.DropDown
-        EnddatapointrownumberEditFieldLabel  matlab.ui.control.Label
-        EnddatapointrownumberEditField  matlab.ui.control.NumericEditField
-        NumberofreplicatesEditFieldLabel  matlab.ui.control.Label
-        NumberofreplicatesEditField     matlab.ui.control.NumericEditField
-        ReadsettingfromfileSwitchLabel  matlab.ui.control.Label
-        ReadsettingfromfileSwitch       matlab.ui.control.Switch
+        ConversionfactortocountsEditFieldLabel  matlab.ui.control.Label
+        ConversionfactortocountsEditField  matlab.ui.control.NumericEditField
+        ThresholdlowerboundaryEditFieldLabel  matlab.ui.control.Label
+        ThresholdlowerboundaryEditField  matlab.ui.control.NumericEditField
+        TruetofalsepositiveratioEditFieldLabel  matlab.ui.control.Label
+        TruetofalsepositiveratioEditField  matlab.ui.control.NumericEditField
+        SmoothingwindowEditFieldLabel   matlab.ui.control.Label
+        SmoothingwindowEditField        matlab.ui.control.NumericEditField
+        StartdatapointEditFieldLabel    matlab.ui.control.Label
+        StartdatapointEditField         matlab.ui.control.NumericEditField
+        Datafileformath5orcsvDropDownLabel  matlab.ui.control.Label
+        Datafileformath5orcsvDropDown   matlab.ui.control.DropDown
+        EnddatapointEditFieldLabel      matlab.ui.control.Label
+        EnddatapointEditField           matlab.ui.control.NumericEditField
+        NumberofRunspersampleEditFieldLabel  matlab.ui.control.Label
+        NumberofRunspersampleEditField  matlab.ui.control.NumericEditField
+        ReadsettingfromExcelMDEFSwitchLabel  matlab.ui.control.Label
+        ReadsettingfromExcelMDEFSwitch  matlab.ui.control.Switch
         Image                           matlab.ui.control.Image
         DLampLabel                      matlab.ui.control.Label
         DLamp                           matlab.ui.control.Lamp
@@ -40,12 +40,19 @@ classdef NanoFinder < matlab.apps.AppBase
         CLamp                           matlab.ui.control.Lamp
         DetectionSwitchLabel            matlab.ui.control.Label
         DetectionSwitch                 matlab.ui.control.Switch
-        ConcurrencySwitchLabel          matlab.ui.control.Label
-        ConcurrencySwitch               matlab.ui.control.Switch
+        hpCCSwitchLabel                 matlab.ui.control.Label
+        hpCCSwitch                      matlab.ui.control.Switch
         Lamp                            matlab.ui.control.Lamp
-        ClusteringSwitchLabel           matlab.ui.control.Label
-        ClusteringSwitch                matlab.ui.control.Switch
+        QuantClusteringSwitchLabel      matlab.ui.control.Label
+        QuantClusteringSwitch           matlab.ui.control.Switch
+        HCLampLabel                     matlab.ui.control.Label
+        HCLamp                          matlab.ui.control.Lamp
+        SISLampLabel                    matlab.ui.control.Label
+        SISLamp                         matlab.ui.control.Lamp
+        NanoFinder556Label              matlab.ui.control.Label
     end
+
+    %Kamyar Mehrabi 2021.03.15
 
     % Callbacks that handle component events
     methods (Access = private)
@@ -59,19 +66,24 @@ classdef NanoFinder < matlab.apps.AppBase
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            %app.AmplitudeSlider.Value=app.Initial_valueEditField.Value;
-            %value = app.AmplitudeSlider.Value;
-            %plot(app.UIAxes, value*peaks)
-            %app.UIAxes.YLim =[-1000 1000];
             app.Lamp.Color = [1 0 0] ;
             
             tic
+            app.NanoFinder556Label.Text
             [filed,path] = uigetfile('../*.xlsx');
             cd (path)
             
             [tc]=read_file(filed);
             tc=tc(2:end,:);
             [nsh,tx] = xlsread(filed,'Elements');
+            List_Elem=tx;
+            size_tx=size(tx)
+            sab=[];
+            for ihat=1:size_tx(1)
+                sab=cat(2,sab,{[tx{ihat,:}]});
+            end
+            tx=sab;
+            
             
             sumy='No';
             if strcmp(app.SummarySwitch.Value, 'Yes')
@@ -84,35 +96,35 @@ classdef NanoFinder < matlab.apps.AppBase
             end
             
             conc='No';
-            if strcmp(app.ConcurrencySwitch.Value, 'Yes')
+            if strcmp(app.hpCCSwitch.Value, 'Yes')
                 conc='Yes';
+            end
+            
+            Clus_switch='No';
+            if strcmp(app. QuantClusteringSwitch.Value, 'Yes')
+                Clus_switch='Yes';
             end
             
             if strcmpi(Detect,'yes')
                 app.DLamp.Color = [1 0 0] ;
-                if strcmp(app.ReadsettingfromfileSwitch.Value, 'No')
+                if strcmp(app.ReadsettingfromExcelMDEFSwitch.Value, 'No')
                     
                     
                     typ='h5';
-                    if strcmp(app.InputdataformatDropDown.Value, 'CSV')
+                    if strcmp(app.Datafileformath5orcsvDropDown.Value, 'CSV')
                         typ='CSV';
                     end
-                    WF=app.Integration_windowEditField.Value;
-                    limit=app.Least_countEditField.Value;
-                    Goldnum=app.NanoparticletonoiseEditField.Value;
-                    smooth_window=app.Smooth_windowEditField.Value;
-                    st=app.StartdatapointrownumberEditField.Value;
-                    ed=app.EnddatapointrownumberEditField.Value;
-                    replicatN=app.NumberofreplicatesEditField.Value;
+                    WF=app.ConversionfactortocountsEditField.Value;
+                    limit=app.ThresholdlowerboundaryEditField.Value;
+                    Goldnum=app.TruetofalsepositiveratioEditField.Value;
+                    smooth_window=app.SmoothingwindowEditField.Value;
+                    st=app.StartdatapointEditField.Value;
+                    ed=app.EnddatapointEditField.Value;
+                    replicatN=app.NumberofRunspersampleEditField.Value;
                     if replicatN==0
                         replicatN=1;
                     end
                 else
-                    %size is specifyed 74111
-                    %Waveform is speciyed 44
-                    %size of the internal data is specifyed 250*400
-                    %can switch between Tofware, h5 and CSV change variable 'typ'
-                    % same number of replicate and file size only suported
                     
                     [nm,tm]=xlsread(filed,'Read me AIO');
                     WF=nm(1,1);
@@ -121,48 +133,13 @@ classdef NanoFinder < matlab.apps.AppBase
                     smooth_window=nm(4,1);
                     st=nm(5,1);
                     ed=nm(6,1);
-                    if length(nm)==7
+                    if length(nm)>=7
                         replicatN=nm(7,1);
                     else
                         replicatN=1;
                     end
                     typ=tm{8,2};
                 end
-                %size is specifyed 74111
-                %Waveform is speciyed 44
-                %size of the internal data is specifyed 250*400
-                %can switch between Tofware, h5 and CSV change variable 'typ'
-                % same number of replicate and file size only suported
-                
-                %clear
-                %[filed,path] = uigetfile('../*.xlsx');
-                %cd (path)
-                
-                %[nm,tm]=xlsread(filed,'Read me AIO');
-                %WF=nm(1,1);
-                %limit=nm(2,1);
-                %Goldnum=nm(3,1);
-                %smooth_window=nm(4,1);
-                %st=nm(5,1);
-                % ed=nm(6,1);
-                %if length(nm)==7
-                %    replicatN=nm(7,1);
-                %else
-                %    replicatN=1;
-                %end
-                %typ=tm{8,2};
-                %sumy=tm{9,2};
-                
-                
-                %WF=44 % number of waveform
-                %limit=3.5 %loest Sc accepted
-                %Goldnum=40 % Number which define the levlel of NP existance in the file "thriky one" the number of detected nanoparticle devided by number of estimated false positive
-                %smooth_window=50;
-                %typ='h5'%need to be change according to your data format 'csv' or 'h5'
-                %replicatN=3%
-                
-                %[tc]=read_file(filed);
-                %tc=tc(2:end,:);
                 
                 tcl=size(tc);
                 
@@ -228,94 +205,58 @@ classdef NanoFinder < matlab.apps.AppBase
                 end
                 
                 
+                [nl,txl] = xlsread(filed,'Line');
+                nl_sz=size(nl);
+                if nl_sz(2)==1
+                    app.SISLamp.Color = [1 0 0] ;
+                    pause(1)
+                    SIS_Line_exp(filed);
+                    [nl,txl] = xlsread(filed,'Line');
+                end
+                app.SISLamp.Color = [0 1 0] ;
+                
+                
                 tc_new=itc;
                 tc=otc;
                 
                 tcsize=size(tc_new)
-                Y=zeros([1,tcsize(1)])
-                f1=figure
+                Y=zeros([1,tcsize(1)]);
+                f1=figure;
                 X = categorical(tc(:,1));
                 X = reordercats(X,tc(:,1));
                 f1=barh(X,Y) % Error here is due to the name replicate number
-                title('reading data (%)')
-                saveas(f1,'reading data AIO.pdf')
+                title('reading data (%)');
+                saveas(f1,'reading data AIO.pdf');
                 
-                
-                
-                
-                %Bumper setting
-                sumfac=30 % number of data point in the bump
-                alfac=11 % max of NP in each bump area
-                alfad=0.01;% top finder
-                %Count_limit=1000000;
-                
-                
-                %xlswrite(filed,[{'WF'},{'limit'},{'Goldnum'},{'smooth_window'},{'replicatN'},{'alfad'},{'sumfac'},{'alfac'},{'Count_limit'},{'date'}]','Read me AIO','A2');
-                %xlswrite(filed,[WF,limit,Goldnum,smooth_window,replicatN,alfad,sumfac,alfac,Count_limit,{date}]','Read me AIO','B2');
-                xlswrite(filed,[{'Integration window'},{'Least count'},{'Nanoparticle to noise'},{'Smooth_window'},{'Start data point row number'},{'End data point row number'},{'Number of replicates to sum up'}, ...
-                    {'Data file format (h5 or csv)'},{'Summary of analysis'},{'Particles concurrency analysis'},{'Date of processing'}]','Read me AIO','A1');
-                xlswrite(filed,[WF,limit,Goldnum,smooth_window,st,ed,replicatN,typ,sumy,conc,{date}]','Read me AIO','B1');
-                
-                
-                %[nd ,tc ] = xlsread(filed,'sheet1');
-                
-                %[nsh,tx] = xlsread(filed,'Elements');
-                [nl,txl] = xlsread(filed,'Line');
                 tsh=el_sim_two(tx);
                 tsh=tsh';
-                %slop=nd(:,1); % for calculatng the Lc and Sc
-                %incp=nd(:,2);
-                %slops=nd(:,1);
-                %incps=nd(:,2);
                 Total_sample=[];
                 Total_drp1=[];
                 Total_diss=[];
                 Completed_newlamda=[];
-                sum_datad=[];
-                nnpv=[];
-                                
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Reading the data
+                
                 for ia=1:tcsize(1)
-                    
-                    Y(ia)=10
-                    f1=barh(X,Y)
-                    title('reading data (%)')
-                    drawnow
-                    saveas(f1,'reading data AIO.pdf')
-                    
-                    
-                    %d=tcsize(2);
+
                     Completed_data=[];
                     Completed_drp1=[];
                     Completed_diss=[];
                     newlamda=[];
-                    for f=1:d(ia) %for the number of columns in filename this loop will be repeated%
-                        strn=tc_new{ia,f}
-                        [sample,diss,strn]= Readtof(typ,strn,tx,WF,st,ed);
-                        %[txt,sample,dropb1,dropb2,diss,strn]= Readtofcsv(strn);
-                        %Completed_data=sample;
+                    for fh=1:d(ia) %for the number of columns in filename this loop will be repeated%
+                        strn=tc_new{ia,fh}
+                        [sample,diss,strn,WF,st,ed]= Readtof(typ,strn,List_Elem,WF,st,ed);
+     
                         
-                        
-                        
-                        
-                        % smoth the data
-                        dfg=sample;
+                        % smooth the data
                         samp=smoothdata(sample,'movmedian',smooth_window);
                         avy=mean(samp);
-                        %newlamda=cat(2,newlamda,avy');
                         sample=sample-samp+avy;
-                        % dropee=smoothdata(dropb1,'movmedian',smooth_window);
-                        %  avyd=mean(dropee);
-                        %  dropb1=dropb1-dropee+avyd;
-                        
-                        
                         Completed_data=cat(1,Completed_data,sample);
-                        %  Completed_drp1=cat(1,Completed_drp1,dropb1);
                         Completed_diss=cat(1,Completed_diss,diss);
                         newlamda=cat(1,newlamda,avy);
                     end
-                    %[Completed_databumpernotused,Alfat,bump_num,Datad]=Bumper(Completed_data,alfad,sumfac,alfac);
-                    
-                    %sum_datad=cat(1,sum_datad,bump_num);
+
                     Total_sample=cat(3,Total_sample,Completed_data);
                     Total_drp1=cat(3,Total_drp1,Completed_drp1);
                     Total_diss=cat(2,Total_diss,Completed_diss');
@@ -328,66 +269,84 @@ classdef NanoFinder < matlab.apps.AppBase
                     saveas(f1,'reading data AIO.pdf')
                     
                 end
+                xlswrite(filed,[{'Conversion factor to counts'},{'Threshold lower boundary'},{'True to false positive ratio'},{'Smoothing window'},{'Start data point'},{'End data point'},{'Number of Runs per sample'}, ...
+                    {'Data file format (h5 or csv)'},{'Detection'},{'Summary'},{'Concurrency'},{'Quantification and clustering'},{'Date of processing'}]','Read me AIO','A1');
+                xlswrite(filed,[WF,limit,Goldnum,smooth_window,st,ed,replicatN,typ,Detect,sumy,conc,Clus_switch,{date}]','Read me AIO','B1');
                 
-                Y=zeros([1,2])
-                f2=figure
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Thresholding S_c S_c_s
+                
+                Y=zeros([1,2]);
+                f2=figure;
                 X = categorical({'Thresholding','Detection'});
                 X = reordercats(X,{'Thresholding','Detection'});
-                f2=barh(X,Y)
-                title('Processing data (%)')
-                saveas(f2,'Processing data AIO.pdf')
+                f2=barh(X,Y);
+                title('Processing data (%)');
+                saveas(f2,'Processing data AIO.pdf');
                 
                 lsize=size(nl);
                 Thpos=[];
                 Thpos_value=[];
                 Thpos_lamda=[];
                 Thspos_value=[];
-                for ig=1:lsize(1)
+                size_data=size(Total_sample);
+                rd=sort(Total_sample,1,'descend');
+                for ig=1:lsize(1)+1 % Changed on 2021.06.21
+                    if ig==lsize(1)+1
+                        gg=lsize(1);
+                        sd=rd(1+ceil(2*size_data(1)*nl(gg,1)):end,:,:); %%% Changed on 2020.07.07
+                    else
+                        gg=ig;
+                        sd=rd(1+ceil(2*size_data(1)*nl(gg,1)*Goldnum):end,:,:); %%% Changed on 2020.07.07
+                    end
                     
-                    Y(1)=Y(1)+(100/lsize(1)/2)
+                    Y(1)=Y(1)+(100/(lsize(1)+1)/2)
                     f2=barh(X,Y)
                     title('Processing data (%)')
                     drawnow
                     saveas(f2,'Processing data AIO.pdf')
                     
-                    slope=nl(ig,2);
-                    incp=nl(ig,3);
-                    slopes=nl(ig,5);
-                    incps=nl(ig,6);
+                    slope=nl(gg,2);
+                    incp=nl(gg,3);
+                    slopes=nl(gg,5);
+                    incps=nl(gg,6);
                     sumnpp=[];
-                    size_data=size(Total_sample);
-                    sd=sort(Total_sample,1,'descend');
-                    sd=sd(round(size_data(1)*nl(ig,1)*Goldnum):end,:,:); %%% change on 2020.07.07
+                    
+                    
+
                     lamda = squeeze(mean(sd,1));
                     lamda=reshape(lamda,[],tcsize(1));
                     lamda(lamda<0)=0;
-                    %lamda=Completed_newlamda;
-                    Sc=lamda+(slope*sqrt(lamda))+incp;%be carful Sc is included lamda so it not Lc
-                    Sc(Sc<limit)=limit;
+                    Sc=lamda+(slope*sqrt(lamda))+incp;% Sc is included lamda so it not Lc
+                    Lc=Sc-lamda;
+                    ind_lim_Lc=find(Lc<limit);
+                    limit_lamda=limit+lamda;
+                    Sc(ind_lim_Lc)=limit_lamda(ind_lim_Lc);
                     Sc=reshape(Sc,[],tcsize(1));
                     Scs=lamda+(slopes'.*sqrt(lamda))+incps';
-                    Scs(Scs<limit)=limit;
+                    Lcs=Scs-lamda;
+                    ind_lim_Lcs=find(Lcs<limit);
+                    Scs(ind_lim_Lcs)=limit_lamda(ind_lim_Lcs);
                     Scs=reshape(Scs,[],tcsize(1));
                     for ja=1:tcsize(1)
                         
                         name_function='elementwise';
                         str = strcat(tc(ja,1),{'.xlsx'});
                         file=[str{:}];
-                        
-                        %file=tc{i,1}
+
                         [~,data_split_one]=split_correct(name_function,Total_sample(:,:,ja),file,tsh,lamda(:,ja)',Scs(:,ja)');
                         
                         [sumNp,avgNp,TrueDiss,npp,npv,Binary_detection]=Top_finder(Sc(:,ja)',data_split_one);
                         x=sum(npp,1);
                         sumnpp=cat(1,sumnpp,x);
                     end
-                    sumnpp=sumnpp/(2*size_data(1)*nl(ig,1)); % the number of detected nanoparticle devided by number of false positive
+                    sumnpp=sumnpp/(2*size_data(1)*nl(gg,1)); % The number of detected nanoparticle devided by number of false positive
                     Thpos=cat(3,Thpos,sumnpp);
                     Thpos_value=cat(3,Thpos_value,Sc');
                     Thspos_value=cat(3,Thspos_value,Scs');
                     Thpos_lamda=cat(3,Thpos_lamda,lamda');
                     
-                    Y(1)=Y(1)+(100/lsize(1)/2)
+                    Y(1)=Y(1)+(100/(lsize(1)+1)/2)
                     f2=barh(X,Y)
                     title('Processing data (%)')
                     drawnow
@@ -402,7 +361,7 @@ classdef NanoFinder < matlab.apps.AppBase
                 for id=1:Thpos_size(1)
                     for jd=1:Thpos_size(2)
                         for kd=1:Thpos_size(3)
-                            if Thpos(id,jd,kd)>Goldnum % important decision on
+                            if Thpos(id,jd,kd)>Goldnum % important decision
                                 Th_final(id,jd)=kd;
                                 Th_final_value(id,jd)=Thpos_value(id,jd,kd);
                                 Ths_final_value(id,jd)=Thspos_value(id,jd,kd);
@@ -410,7 +369,7 @@ classdef NanoFinder < matlab.apps.AppBase
                                 break
                             else
                                 if kd==Thpos_size(3)
-                                    Th_final(id,jd)=-kd;% need to be modiey "what if therre were no particles!!?"
+                                    Th_final(id,jd)=-kd+1;% need to be modiey "what if there were no particles!!?"
                                     Th_final_value(id,jd)=Thpos_value(id,jd,kd);
                                     Ths_final_value(id,jd)=Thspos_value(id,jd,kd);
                                     Th_final_lamda(id,jd)=Thpos_lamda(id,jd,kd);
@@ -421,14 +380,7 @@ classdef NanoFinder < matlab.apps.AppBase
                         end
                     end
                 end
-                %xlswrite(filed,Th_final_lamda,'Th_final_lamda','A1');
-                %xlswrite(filed,Th_final_value,'Th_final_value','A1');
-                %xlswrite(filed,Ths_final_value,'Ths_final_value','A1');
-                %xlswrite(filed,Th_final,'Th_final','A1');
-                
-                
-                
-                %[Th_final_lamda,Ths_final_value,Th_final_value,Th_final]=Count_to_Gaussian(Total_sample,Th_final_lamda,Ths_final_value,Th_final_value,Count_limit,Th_final);
+
                 Allnpv=[];
                 for ib=1:tcsize(1)
                     
@@ -456,15 +408,11 @@ classdef NanoFinder < matlab.apps.AppBase
                     sumNpFP=round(2*SizeB(1)*nl(abs(Th_final(ib,:))),0);
                     
                     [Cor_matrix,Cor_p_value]=correlation_coefs (Binary_detection,npv,file,tsh);
-                    xlswrite(file,[{'Avg raw signal_counts'};{'Lamda_counts'};{'TrueDiss_counts'};{'Avg NP_counts'};{'Med NP_counts'};{'Total NP'};{'FALSE POSITIVE Estimation'};{'Lc_Critical value_counts'};{'Sc_Threshold_counts'};{'Scs_Threshold split_counts'};{'FALSE POSITIVE level'};{'split_events'}],'Avg','A2');
+                    xlswrite(file,[{'Avg raw signal_counts'};{'Lambda_counts'};{'TrueDiss_counts'};{'Avg NP_counts'};{'Med NP_counts'};{'Total NP'};{'FALSE POSITIVE Estimation'};{'Lc_Critical value_counts'};{'Sc_Threshold_counts'};{'Scs_Threshold split_counts'};{'FALSE POSITIVE level'};{'split_events'}],'Avg','A2');
                     xlswrite(file,tsh,'Avg','B1');
                     xlswrite(file,[Total_diss(:,ib)';Th_final_lamda(ib,:);TrueDiss;avgNp;medNP;sumNp;sumNpFP;(Th_final_value(ib,:)-TrueDiss);Th_final_value(ib,:);Ths_final_value(ib,:);Th_final(ib,:);split_event_count],'Avg','B2');
-                    
-                    %xlswrite(file,tsh,'npv','A1');
-                    %xlswrite(file,npv,'npv','A2');
-                    %nnpv=cat(3,nnpv,npv);
-                    
-                    str = strcat(tc(ib,1),{'.npv.csv'});
+
+                    str = strcat(tc(ib,1),{'.NP time trace.csv'});
                     file=[str{:}]
                     tit=el_sim_two(tsh);
                     Allnpv=cat(3,Allnpv,npv);
@@ -482,15 +430,16 @@ classdef NanoFinder < matlab.apps.AppBase
                 app.DLamp.Color = [0 1 0] ;
             end
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Summary
             if strcmpi(sumy,'yes')
                 app.SLamp.Color = [1 0 0] ;
-                Y=0
-                f3=figure
+                Y=0;
+                f3=figure;
                 X = categorical({'Summary'});
                 X = reordercats(X,{'Summary'});
-                f3=barh(X,Y)
-                title('Summary progress (%)')
-                saveas(f3,'Summary AIO.pdf')
+                f3=barh(X,Y);
+                title('Summary progress (%)');
+                saveas(f3,'Summary AIO.pdf');
                 
                 %Reading
                 
@@ -504,8 +453,7 @@ classdef NanoFinder < matlab.apps.AppBase
                     file=[str{:}]
                     [nn,tn] = xlsread(file,'NP Number');
                     npn=cat(3,npn,nn);
-                    %[ncon,tcon] = xlsread(file,'Concurrent');
-                    %con=cat(3,con,ncon);
+
                     [nsum,tsum] = xlsread(file,'Avg');
                     sumdata=cat(3,sumdata,nsum);
                     
@@ -517,21 +465,7 @@ classdef NanoFinder < matlab.apps.AppBase
                 end
                 %Calculating Concurrency
                 sznpn=size(npn);
-                pers=[];
-                ratio=[];
-                %for i=1:sznpn(1)
-                %    x= (npn(:,i,:)-con(:,i,:))./npn(i,i,:)*100;
-                %     x = squeeze(x);
-                %    pers=cat(3,pers,x);
-                
-                %    z=con;
-                %     z(z==0)=0.4;
-                %     y= (npn(:,i,:)-sqrt(npn(:,i,:)))./z(:,i,:);
-                %   y = squeeze(y);
-                %    y(i,:)=nan;
-                %     ratio=cat(3,ratio,y);
-                % end
-                
+
                 
                 %writing Concurrency
                 for ik=1:sznpn(1)
@@ -545,41 +479,11 @@ classdef NanoFinder < matlab.apps.AppBase
                     xlswrite(filed,tn(:,1),'NP number overall',A1);
                     xlswrite(filed,nsheet,'NP number overall',A1);
                     xr = squeeze(npn(:,ik,:));
+                    if sznpn(2)==1%tcsize(1)==1
+                        xr=xr';
+                    end
                     xlswrite(filed,round(xr,1),'NP number overall',B2);
-                    
-                    
-                    
-                    %[A1,A2,B1,B2]=exgen(sznpn(2),1);
-                    
-                    %xlswrite(filed,tc',[nsheet{:}],B1);
-                    %xlswrite(filed,tn(:,1),[nsheet{:}],A1);
-                    %xlswrite(filed,{'Actual number'},[nsheet{:}],A1);
-                    %xr = squeeze(npn(:,i,:));
-                    %xlswrite(filed,round(xr,1),[nsheet{:}],B2);
-                    
-                    %[A1,A2,B1,B2]=exgen(sznpn(2),2);
-                    
-                    %xlswrite(filed,tc',[nsheet{:}],B1);
-                    %xlswrite(filed,tn(:,1),[nsheet{:}],A1);
-                    %xlswrite(filed,{'Ratio'},[nsheet{:}],A1);
-                    %xlswrite(filed,round(ratio(:,:,i),1),[nsheet{:}],B2);
-                    
-                    
-                    %[A1,A2,B1,B2]=exgen(sznpn(2),3);
-                    
-                    %xlswrite(filed,tc',[nsheet{:}], B1);
-                    %xlswrite(filed,tn(:,1),[nsheet{:}],A1);
-                    %xlswrite(filed,{'Concurency'},[nsheet{:}],A1);
-                    %xr = squeeze(con(:,i,:));
-                    %xlswrite(filed,round(xr,1),[nsheet{:}],B2);
-                    
-                    %[A1,A2,B1,B2]=exgen(sznpn(2),4);
-                    
-                    %xlswrite(filed,tc',[nsheet{:  }],B1);
-                    %xlswrite(filed,tn(:,1),[nsheet{:}],A1);
-                    %xlswrite(filed,{'Percentage'},[nsheet{:}],A1);
-                    %xlswrite(filed,round(pers(:,:,i),1),[nsheet{:}],B2);
-                    
+ 
                     Y=Y+(70/sznpn(1));
                     f3=barh(X,Y)
                     title('Summary progress (%)')
@@ -589,30 +493,16 @@ classdef NanoFinder < matlab.apps.AppBase
                     
                 end
                 
-                
-                
-                %Writing the metadeta
-                
-                % hol=zeros(sznpn(1),tcsize(1));
-                % for i=1:tcsize(1)
-                %     for j=1:sznpn(1)
-                %         hol(j,i)=npn(j,j,i);
-                %     end
-                % end
-                % xlswrite(filed,tc','Total NP','B1');
-                % xlswrite(filed,tn(:,1),'Total NP','A1');
-                % xlswrite(filed,{'Total NP'},'Total NP','A1');
-                % xlswrite(filed,hol,'Total NP','B2');
-                
+
                 tsumsize=size(tsum);
                 
                 for i=2:tsumsize(1)
                     xlswrite(filed,tc',tsum{i,1},'B1');
                     xlswrite(filed,tn(:,1),tsum{i,1},'A1');
                     xr = squeeze(sumdata(i-1,:,:));
-                    %if tcsize(1)==1
-                    %    xr=xr';
-                    %end
+                    if or(sznpn(2)==1,tcsize(1)==1)
+                        xr=xr';
+                    end
                     xlswrite(filed,xr,tsum{i,1},'B2');
                     
                     Y=Y+(20/tsumsize(1));
@@ -630,184 +520,130 @@ classdef NanoFinder < matlab.apps.AppBase
                 app.SLamp.Color = [0 1 0] ;
             end
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Concurrency
+            % there is always a portion that we are blind to for example TiFeZn might exist and be lower than "fac2" but it sub class does not (Ti, FeZn/ Fe, TiZn/ Zn, TiFe)
+            % and so far the code is blind to that and blind portion could be as high as 15% of element data so please use as big file size as possible to minimized that or used smaller "fac1" fact 2 seems has no effect for blind portion
+
             if strcmpi(conc,'yes')
                 app.CLamp.Color = [1 0 0] ;
-                %udt=10; % user define min events per element for concurrency
-                %mec=34; % max element in the councrency
-                %[nm,tm] = xlsread(filed,'Read me Coun');
+
                 tx=tx';
                 tax=el_sim(tx(:,1));
-                %tcsize=size(tc)
-                NPdata=[];
                 
                 tcsize=size(tc)
-                Y=zeros([1,tcsize(1)])
-                f1=figure
+                Y=zeros([1,tcsize(1)]);
+                f1=figure;
                 X = categorical(tc(:,1));
                 X = reordercats(X,tc(:,1));
-                f1=barh(X,Y)
-                title('Coun Processing time (s)')
-                saveas(f1,'Coun Processing time.pdf')
+                f1=barh(X,Y);
+                title('hpCC Processing time (s)');
+                saveas(f1,'hpCC Processing time.pdf');
                 
                 fac=1;
                 fac2=2%nm(1,1);
-                exn='.npv.csv';%.npv.csv
+                exn='.NP time trace.csv';%.npv.csv
                 
-                %cutof=0.8;  %something for hierarcial classifcation
-                %fac=1;     % dont consider event happened less than this number in fist run
-                %fac2=2;    % further decreasing the number of minimom event to be deal with
                 fac3=[];    %normally 1 or 2. fot cuncurency decition how many time an mix event should be larger than its concurent to not be consider as fake
                 valu=0.49; %for grouping decition 0.49 for low sub group o.5 for higher subgroup
                 base=3;    % base for coding of the data minimom of 3. the base 2 wont work properly
                 chans=0;  % if a NPc compose of NP (A and B) what should be thier subtraction to place chans insted of that small number %please look at the code for more informaiton
                 
-                %xlswrite(filed,[{'Min Freq Coun'},{'File name additon text'},{'Date'}]','Read me Coun','A2');
-                %xlswrite(filed,[fac2,exn,{date}]','Read me Coun','B2');
-                
-                %tope_core=cellstr(dec2base(ntope,3));   %use version V6.3 to get file separate data
-                %tope=tope_core'; % position of this line in chase you want to have a constant and prograssive "tope" for all
-                
-                class_store=[]
                 for ti=1:tcsize(1)
                     start_con=toc;
                     
                     Y(ti)=toc-start_con;
                     f1=barh(X,Y)
-                    title('Coun Processing time (s)')
+                    title('hpCC Processing time (s)')
                     drawnow
-                    saveas(f1,'Coun Processing time.pdf')
-                    
-                    
-                    
-                    
-                    
-                    tope=[];%tope_core'; % position of this line in chase you want to change "tope" per sample
+                    saveas(f1,'hpCC Processing time.pdf')
+
                     nnpv=[];
                     for fw=1:1 %for the number of rows in filename this loop will be repeated%
-                        str = strcat(tc(ti,fw),{exn}); %%%%%%%%%%%%%%%%%%%%%%
-                        file=[str{:}]%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        str = strcat(tc(ti,fw),{exn});
+                        file=[str{:}]
                         [pv,tnpv] = xlsread(file);
-                        %[txt,sample,dropb1,dropb2,diss,strn]= Readtofcsv(strn);
-                        %Completed_data=sample;
+
                         nnpv=cat(1,nnpv,pv);
                     end
-                    
-                    %nev=Allnpv(:,:,ti);
-                    %[nnpv,tax,elem_list]=select_Concurency(nev,tx,udt,mec); %Addition to original
-                    
-                    
+
                     Y(ti)=toc-start_con;
                     f1 =barh(X,Y);
-                    title('Coun Processing time (s)')
-                    saveas(f1,'Coun Processing time.pdf')
-                    
-                    %str = strcat(tc(ti),{'.xlsx'}); %%%%%%%%%%%%%%%%%%%%%%
-                    %file=[str{:}]%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    %[nnpv,tnpv] = xlsread(file,'npv');%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    NPdata=nnpv;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    title('hpCC Processing time (s)')
+                    saveas(f1,'hpCC Processing time.pdf')
+
+                    NPdata=nnpv;
                     NPdata_con=nnpv;
-                    %nnpv(nnpv<0)=0;% it is neccessry since it wont work with negative vlues
-                    %NPdata=nnpv;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     str = strcat(tc(ti,1),{'.xlsx'});
                     file = [str{:}];
                     
-                    % part 1 counting
-                    [List_1, layer_data, unic_freq_data,nns]=unic_num(NPdata,fac,base); %make sure the line data are correct
-                    %[List_1_E,last_write_pos_E]=Squeez_Write(tc,ti,List_1,1,file,base,tax);
-                    [List_1_E,last_write_pos_E]=Squeez_Write(tc,ti,List_1,1,file,base,tax,'Before Coun');
-                    Y(ti)=toc-start_con;
-                    f1=barh(X,Y);
-                    title('Coun Processing time (s)')
-                    saveas(f1,'Coun Processing time.pdf')
-                    
-                    %part 2  considering concurency
-                    List_2=List_1;
-                    
-                    %%%%%%%%%%%%% one can delete part 2 from here to not apply concurency effect on the data and deal with raw data for classification
-                    sizedata=size(NPdata);
-                    sizelist=size(List_2);
-                    for o=sizelist(2):-1:2
-                        x=List_2{o};
-                        sizex=size(x);
-                        if sizex(1)~=0
-                            for p=1:sizex(1)
-                                for k=1:floor(o/2)
-                                    [List_2,nns,NPdata_con]=update_list(chans,fac3,fac2,List_2,sizedata(1),p,o,k,o-k,nns,NPdata_con,base,tax);
+                    sum_NPdata_con=sum(sum(NPdata_con,1),2);
+                    if sum_NPdata_con>2
+                        
+                        % part 1 counting
+                        [List_1, layer_data, unic_freq_data,nns]=unic_num(NPdata,fac,base); %make sure the line data are correct
+                        %[List_1_E,last_write_pos_E]=Squeez_Write(tc,ti,List_1,1,file,base,tax);
+                        [List_1_E,last_write_pos_E]=Squeez_Write(tc,ti,List_1,1,file,base,tax,'Before hpCC');
+                        Y(ti)=toc-start_con;
+                        f1=barh(X,Y);
+                        title('hpCC Processing time (s)')
+                        saveas(f1,'hpCC Processing time.pdf')
+                        
+                        %part 2  considering concurency
+                        List_2=List_1;
+                        
+                        %%%%%%%%%%%%% one can delete part 2 from here to not apply concurency effect on the data and deal with raw data for classification
+                        sizedata=size(NPdata);
+                        sizelist=size(List_2);
+                        for o=sizelist(2):-1:2
+                            x=List_2{o};
+                            sizex=size(x);
+                            if sizex(1)~=0
+                                for p=1:sizex(1)
+                                    for k=1:floor(o/2)
+                                        [List_2,nns,NPdata_con]=update_list(chans,fac3,fac2,List_2,sizedata(1),p,o,k,o-k,nns,NPdata_con,base,tax);
+                                    end
+                                    Y(ti)=toc-start_con;
+                                    f1=barh(X,Y)
+                                    title('hpCC Processing time (s)')
+                                    %saveas(f1,'Coun Processing time.pdf')
                                 end
-                                Y(ti)=toc-start_con;
-                                f1=barh(X,Y)
-                                title('Coun Processing time (s)')
-                                %saveas(f1,'Coun Processing time.pdf')
                             end
+                            
                         end
                         
+                        Y(ti)=toc-start_con;
+                        f1=barh(X,Y)
+                        title('hpCC Processing time (s)')
+                        saveas(f1,'hpCC Processing time.pdf')
+                        
+                        % part 3 squeezing and writing
+                        %[List_3,last_write_pos]=Squeez_Write(tc,ti,List_2,1,file,base,tax,'After hpCC'); %error in this line means you have a file with no concurent events
+                        
+                        Y(ti)=toc-start_con;
+                        f1=barh(X,Y)
+                        title('hpCC Processing time (s)')
+                        saveas(f1,'hpCC Processing time.pdf')
+
                     end
+                    tra=sum(NPdata_con,2);
+                    tra=find(tra>0);
+                    if isempty(tra)
+                        tra=1;
+                    end
+                    NPdata_con=NPdata_con(tra,:);
                     
-                    Y(ti)=toc-start_con;
-                    f1=barh(X,Y)
-                    title('Coun Processing time (s)')
-                    saveas(f1,'Coun Processing time.pdf')
-                    
-                    % part 3 squeezing and writing
-                    %[List_3,last_write_pos]=Squeez_Write(tc,ti,List_2,fac2,filed,base,tax); %error in this line means you have a file with no concurent events
-                    [List_3,last_write_pos]=Squeez_Write(tc,ti,List_2,1,file,base,tax,'After Coun'); %error in this line means you have a file with no concurent events
-                    
-                    Y(ti)=toc-start_con;
-                    f1=barh(X,Y)
-                    title('Coun Processing time (s)')
-                    saveas(f1,'Coun Processing time.pdf')
-                    
-                    % part 4 classifiacation
-                    %[List_4]=Classi(tc,ti,List_3,valu,filed,base,tax,tope,last_write_pos);
-                    
-                    %str = strcat(tc(ti,1),{'.coun.xlsx'});
-                    %filee=[str{:}]
-                    %xlswrite(filee,tax','NP','A1');
-                    %xlswrite(filee,NPdata_con,'NP','A2');
-                    %NPdata_con(NPdata_con~=0)=1; %.))))))))))))))
-                    %data_classy(NPdata_con,tax,filee,cutof)%%%%%%%%%%%%%%%
-                    
-                    
-                    
-                    
-                    str = strcat(tc(ti,1),{'.coun.csv'});
+                    str = strcat(tc(ti,1),{'.hpCC.csv'});
                     %str = strcat(tc(ti,1),{'.csv'});
                     file=[str{:}]
                     tit=el_sim_two(tax);
                     sd = array2table(NPdata_con);
                     sd.Properties.VariableNames=tit;
                     writetable(sd,file,'Delimiter',',')
-                    
-                    %size_npv_new=size(NPdata_con);
-                    %size_npv=size(nev);
-                    %if size_npv_new(1)>size_npv(1)
-                    %     nev(size_npv(1)+1:size_npv_new(1),:)=0;
-                    %end
-                    
-                    % nev(:,elem_list)=NPdata_con;
-                    % tsh=el_sim_two(tx);
-                    %tsh=tsh';
-                    
-                    %b_nev=nev;
-                    %b_nev(b_nev>0)=1;
-                    %b_nev_sumrow=sum(b_nev,2);
-                    %ind_pos=find(b_nev_sumrow>0);
-                    % if isempty(ind_pos)
-                    %     ind_pos=1;
-                    % end
-                    % str = strcat(tc(ti,1),{'.NP.csv'});
-                    %  %str = strcat(tc(ti,1),{'.csv'});
-                    %  file=[str{:}]
-                    % tit=el_sim_two(tsh);
-                    % sd = array2table(nev(ind_pos,:));
-                    % sd.Properties.VariableNames=tit;
-                    % writetable(sd,file,'Delimiter',',')
-                    
-                    
+
                     Y(ti)=toc-start_con;
                     f1=barh(X,Y)
-                    title('Coun Processing time (s)')
-                    saveas(f1,'Coun Processing time.pdf')
+                    title('hpCC Processing time (s)')
+                    saveas(f1,'hpCC Processing time.pdf')
                 end
                 %tob=base2dec(tope,3);
                 %tobt=num_nam(tob,3,tax);
@@ -815,28 +651,530 @@ classdef NanoFinder < matlab.apps.AppBase
                 %xlswrite(filed,tob','tope','A2');
                 app.CLamp.Color = [0 1 0] ;
                 
-                xlswrite(filed,{'Concurrency analysis time (s)'},'Read me AIO','A14');
-                xlswrite(filed,tc(:,1),'Read me AIO','A15');
-                xlswrite(filed,Y','Read me AIO','B15');
+                xlswrite(filed,{'Concurrency analysis time (s)'},'Read me AIO','A15');
+                xlswrite(filed,tc(:,1),'Read me AIO','A16');
+                xlswrite(filed,Y','Read me AIO','B16');
                 
             end
-            xlswrite(filed,{'total time (s)'},'Read me AIO','A13');
-            xlswrite(filed,toc,'Read me AIO','B13');
             
-            Yy=100
-            f4=figure
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% First Clustring
+            
+            
+            if strcmpi(Clus_switch,'yes')
+                app.HCLamp.Color = [1 0 0] ;
+                
+                % Find the classes of particle in the corected dataset for concurency 2020.09.17
+                
+                %clear
+                %tic % time start
+                
+                %[filed,path] = uigetfile('../*.xlsx');
+                %cd (path)
+                
+                [nd,tc] = xlsread(filed,'Filename');
+                tc=tc(2:end,:);
+                [nx,tx] = xlsread(filed,'Elements');
+                [AE,At] = xlsread(filed,'Absolute sensitivity(CountsPng)');%
+                [qp,qt] = xlsread(filed,'q_plasma(mlPs)');%
+                [nm,tm]=xlsread(filed,'Read me Den');
+                
+                size_tx=size(tx);
+                sab=[];
+                for ihat=1:size_tx(1)
+                    sab=cat(2,sab,{[tx{ihat,:}]});
+                end
+                tx=sab;
+                
+                tcsize=size(tc)
+                Y=zeros([1,tcsize(1)]);
+                f1=figure;
+                X = categorical(tc(:,1));
+                X = reordercats(X,tc(:,1));
+                
+                f1=barh(X,Y);
+                title('Processing data (%)');
+                saveas(f1,'Den Processing data.pdf');
+
+                Ab_Ef=AE;
+                q_plasma=qp(:,1);
+                Time_M=qp(:,2);
+                
+                size_AE=size(AE);
+                size_qp=size(qp);
+                if and(size_AE(1)==size_qp(1),size_AE(1)==tcsize(1))
+                    if and(size_AE(2)==size_tx(1), size_qp(2)==2)
+                    else
+                        error('More or less numbers of sensitivity or q-plasma entered as input');
+                        
+                    end
+                else
+                    error('More or less numbers of sensitivity or q-plasma entered as input');
+                end
+                
+                %[ntope,ttope] = xlsread(filed,'tope');
+                tx=tx';
+                tax=el_sim(tx(:,1));
+                %end
+                
+                
+                cutoff1=nm(1,1);  %something for hierarcial classifcation
+                PCF=nm(2,1);% min chance to be included to the class dosent matter M or T
+                fx_max=nm(3,1); %max number of cluster in one sample. If it is more it will rise an error.
+                cutoff2=nm(4,1);
+                typf=tm{5,2}; % addition to file name
+                
+                COF=5; % Coefficnet of aggregation
+                PCC=0.33; % percentage of element occurance in that class
+                cycles=3; % median calculation repitision
+                
+                xlswrite(filed,[{'Cutoff1'},{'Occarance in cluster rate'},{'Max number of clusters'},{'Cutoff2'},{'File name additon text'},{'Date'}]','Read me Den','A1');
+                xlswrite(filed,[cutoff1,PCF,fx_max,cutoff2,typf,{date}]','Read me Den','B1');
+                
+                %%%%%%%%%%%%%Class of NP
+                class_store=[];
+                name_class=[];
+                class_number=[];
+                class_number_std=[];
+                class_number_raw=[];
+                code_class=[];
+                act_All=[];
+                mean_NP_All=[];
+                med_NP_All=[];
+                sum_NP_one_All=[];
+                sum_NP_one_std_All=[];
+                std_NP_All=[];
+                major_all=[];
+                major_cla_all=[];
+                major_cla=[];
+                major_cla_std=[];
+                raw_sum_NP_one_All=[];
+                
+                for ti=1:tcsize(1)
+                    
+                    
+                    Y(ti)=10
+                    f1=barh(X,Y)
+                    title('Processing data (%)')
+                    drawnow
+                    saveas(f1,'Den Processing data.pdf')
+
+                    nnpv=[];
+                    for f=1:1 %for the first colum in filename this loop will be repeated%
+                        str = strcat(tc(ti,f),typf);
+                        file=[str{:}]
+                        [pv,tnpv] = xlsread(file);
+                        nnpv=cat(1,nnpv,pv);
+                    end
+                    
+                    Y(ti)=50;
+                    f1=barh(X,Y)
+                    title('Processing data (%)')
+                    saveas(f1,'Den Processing data.pdf')
+                    
+                    
+                    NPdata_con=nnpv;
+                    NPdata_con=NPdata_con./Ab_Ef(ti,:);% from Count to mass in 'ng'%%%% error cause wrong number of input in sheet "Absolute sensitivity(CountsPng)"
+                    str = strcat(tc(ti,1),{'.Classes.xlsx'});
+                    filee=[str{:}]
+                    
+                    hoof=NPdata_con;
+                    hoof(hoof>0)=1;
+                    size_hoof=size(hoof);
+                    sum_hoof=sum(hoof,1);
+                    general_binary_Chance=sum_hoof./size_hoof(1);
+                    sg=sum(hoof,2);
+                    
+                    ind_2=find(sg>1);
+                    good_NP=NPdata_con(ind_2,:);
+                    
+                    sizg=size(good_NP)
+                    
+                    ind_1=find(sg==1);
+                    good_NP_1=NPdata_con(ind_1,:);
+                    sizg_1=size(good_NP_1);
+                    if ~isempty(good_NP_1)
+                        xlswrite(filee,good_NP_1,'Single element','A2');
+                        xlswrite(filee,tax','Single element','A1');
+                    end
+                    
+                    if sizg(1)>1
+                        
+                        
+                        [class_number_min,class_store_min,name_class_min,act_min,max_all,cla_all,cla_std_all,cal_max_all]=data_classy_big(NPdata_con,tax,filee,cutoff1,fx_max,COF,PCC,PCF,cycles);
+                        class_store=cat(1,class_store,class_store_min);
+                        name_class=cat(1,name_class,name_class_min);
+                        act_All=cat(1,act_All,act_min);
+                        major_all=cat(1,major_all,max_all);
+                        major_cla_all=cat(1,major_cla_all,cal_max_all);
+                        major_cla=cat(1,major_cla,cla_all);
+                        major_cla_std=cat(1,major_cla_std,cla_std_all);
+                        
+                        
+                        
+                        class_number_con=class_number_min/q_plasma(ti)/Time_M(ti);% from Number to concentration in particle/ml
+                        class_number_con_std=class_number_min.^(1/2)/q_plasma(ti)/Time_M(ti);
+                        class_number=cat(1,class_number,class_number_con);
+                        class_number = round(class_number);
+                        
+                        class_number_std=cat(1,class_number_std,class_number_con_std);
+                        class_number_std = round(class_number_std);
+                        
+                        class_number_raw=cat(1,class_number_raw,class_number_min);
+                        nee=length(class_number_min);
+                        code=ones(nee,1)*ti;
+                        code_class=cat(1,code_class,code);
+                        
+                        [mean_NP,med_NP,con_NP_one,con_NP_one_std,std_NP,raw_sum_NP_one]=Single_element_NP(NPdata_con,q_plasma(ti),Time_M(ti));
+                        mean_NP_All=cat(1,mean_NP_All,mean_NP);
+                        med_NP_All=cat(1,med_NP_All,med_NP);
+                        sum_NP_one_All=cat(1,sum_NP_one_All,con_NP_one);
+                        sum_NP_one_std_All=cat(1,sum_NP_one_std_All,con_NP_one_std);
+                        if sizg_1(1)>1
+                            std_NP_All=cat(1,std_NP_All,std_NP); %Error in this line due to very low Single elment nano particles
+                        else
+                            std_NP_All=cat(1,std_NP_All,zeros(1,sizg(2)));
+                        end
+                        raw_sum_NP_one_All=cat(1,raw_sum_NP_one_All,raw_sum_NP_one);
+                        
+                        Y(ti)=100;
+                        f1=barh(X,Y);
+                        title('Processing data (%)');
+                        saveas(f1,'Den Processing data.pdf');
+                        
+
+                    else
+                        [mean_NP,med_NP,con_NP_one,con_NP_one_std,std_NP,raw_sum_NP_one]=Single_element_NP(NPdata_con,q_plasma(ti),Time_M(ti));
+                        mean_NP_All=cat(1,mean_NP_All,mean_NP);
+                        med_NP_All=cat(1,med_NP_All,med_NP);
+                        sum_NP_one_All=cat(1,sum_NP_one_All,con_NP_one);
+                        sum_NP_one_std_All=cat(1,sum_NP_one_std_All,con_NP_one_std);
+                        if sizg_1(1)>1
+                            std_NP_All=cat(1,std_NP_All,std_NP); %Error in this line due to very low Single elment nano particles
+                        else
+                            std_NP_All=cat(1,std_NP_All,zeros(1,sizg(2)));
+                        end
+                        
+                        raw_sum_NP_one_All=cat(1,raw_sum_NP_one_All,raw_sum_NP_one);
+                        
+                        Y(ti)=100;
+                        f1=barh(X,Y);
+                        title('Processing data (%)');
+                        saveas(f1,'Den Processing data.pdf');
+                        
+                        
+                    end
+                end
+                
+                Y=zeros(1);
+                f2=figure;
+                X = categorical({'writing data(%)'});
+                X = reordercats(X,{'writing data(%)'});
+                
+                Y=0;
+                f2=barh(X,Y);
+                title('writing data (%)');
+                drawnow;
+                saveas(f2,'Den writing data.pdf');
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Second Clustring: Class of classes
+                
+                if ~isempty (class_store)
+                    x=class_store(:,:,3); % chance
+                    mean_class_con=class_store(:,:,7).*class_number./1000; %ug/ml obtional .*act_All
+                    z=class_store(:,:,4);
+                    z(isnan(z))=0;
+                    z_std=class_store(:,:,6);
+                    %tree = linkage(z,'average','correlation');
+                    %class_of_class = cluster(tree,'Cutoff',0.5,'criterion','distance');
+                    %max_c= max(class_of_class)
+                    
+                    % One way to measure how well the cluster tree generated by the linkage function reflects your data is to compare the cophenetic distances with the original distance
+                    %c = cophenet(tree,pdist(z,'correlation')) % Verify Dissimilarity
+                    
+                    %One way to determine the natural cluster divisions in a data set is to compare the height of each link in a cluster tree with the heights of neighboring links below it in the tree.
+                    %I = inconsistent(tree);% Verify Consistency
+                    %MeanI=mean(I(:,4))
+                    %W_MeanI=sum(I(:,3).*I(:,4))/sum(I(:,3))
+                    
+                    %dendrogram(tree,0,'Labels',name_class)
+                    sizex=size(x);
+                    if sizex(1)>1
+                        %%%%% linkage
+                        tree = linkage(z,'average','correlation');
+                        class_of_class = cluster(tree,'Cutoff',cutoff2,'criterion','distance');
+                        [H,T,outperm]=dendrogram(tree,0,'Labels',name_class,'Orientation','left','ColorThreshold','default','ColorThreshold',cutoff2);
+                        %c = cophenet(tree,pdist(z,'correlation')) % Verify Dissimilarity
+                        %I = inconsistent(tree);% Verify Consistency
+                        set(H,'LineWidth',1);
+                        x0=10;
+                        y0=10;
+                        width=300;
+                        height=3000;
+                        set(gcf,'position',[x0,y0,width,height])
+                        %set(gcf,'DefaultTextFontSize',18)
+                        saveas(gcf,'Dendrogram.pdf')
+                        saveas(gcf,'Dendrogram.fig')
+                        openfig('Dendrogram.fig','visible')
+                        
+                        x0=40;
+                        y0=40;
+                        width=300;
+                        height=300;
+                        %set(gcf,'position',[x0,y0,width,height])
+                        
+                    else
+                        class_of_class=1;
+                        outperm=1;
+                    end
+                    
+                    
+                    
+                    
+                    
+                    
+                    %Cluster writer
+                    
+                    
+                    Element_chance=x;
+                    
+                    sample_name=name_class;
+                    Element=tax';
+                    Cluster=class_of_class;
+                    actual=class_number_raw;
+                    con=class_number;
+                    NP_row=code_class;
+                    size_data=size(class_number);
+                    
+                    NP_row_size=max(NP_row)
+                    
+                    Cluster_size=max(Cluster)
+                    
+                    
+                    %name=sample_name(1:NP_row_size);
+                    size_Element=size(Element);
+                    Cluster_Element_chance=zeros([Cluster_size,size_Element(2)]);
+                    Cluster_con=zeros([Cluster_size,NP_row_size]);
+                    
+                    
+                    for i=1:size_data(1)
+                        %name(NP_row(i))=sample_name(i);
+                        Cluster_con(Cluster(i),NP_row(i))=Cluster_con(Cluster(i),NP_row(i))+con(i);
+                        Cluster_Element_chance(Cluster(i),:)=Cluster_Element_chance(Cluster(i),:)+Element_chance(i,:);
+                    end
+                    Cluster_name={};
+                    for j=1:Cluster_size
+                        a=[];
+                        [~,max_chance]=max(Cluster_Element_chance(j,:));
+                        a= cat(2,a,Element{max_chance});
+                        a=strcat(a,'/');
+                        Cluster_Element_chance(j,max_chance)=0;
+                        [~,max_chance]=max(Cluster_Element_chance(j,:));
+                        a= cat(2,a,Element{max_chance});
+                        a = erase(a,'+');
+                        a={a};
+                        Cluster_name=cat(1,Cluster_name,a);
+                    end
+                    
+
+                    
+                    size_name_class=size(name_class);
+                    Cluster_row=(1:size_name_class(1))';
+                    
+                    sheetname='Clusters particle con.';
+                    xlswrite(filed,{'Concentration (particles/ml)'},sheetname,'A1');
+                    xlswrite(filed,tc(:,1),sheetname,'A2');
+                    xlswrite(filed,Cluster_name',sheetname,'B1');
+                    xlswrite(filed,Cluster_con',sheetname,'B2');
+                    
+                    sheetname='Clusters mass proxy';
+                    xlswrite(filed,{'Cluster row','Sample row','Inter-sample cluster number','Actual number of events','Concentration (particles/ml)','median mass (ng)'},sheetname,'A1');
+                    xlswrite(filed,Cluster_row,sheetname,'A2');
+                    xlswrite(filed,code_class,sheetname,'B2');
+                    xlswrite(filed,class_of_class,sheetname,'C2');
+                    xlswrite(filed,class_number_raw,sheetname,'D2');
+                    xlswrite(filed,class_number,sheetname,'E2');
+                    xlswrite(filed,name_class,sheetname,'F2');
+                    xlswrite(filed,tax',sheetname,'G1');
+                    xlswrite(filed,z.*major_all,sheetname,'G2');
+                    
+                    sheetname='Clusters mass proxy_tree sorted';
+                    xlswrite(filed,{'Cluster row','Sample row','Inter-sample cluster number','Actual number of events','Concentration (particles/ml)','median mass (ng)'},sheetname,'A1');
+                    xlswrite(filed,Cluster_row(outperm,:),sheetname,'A2');
+                    xlswrite(filed,code_class(outperm,:),sheetname,'B2');
+                    xlswrite(filed,class_of_class(outperm,:),sheetname,'C2');
+                    xlswrite(filed,class_number_raw(outperm,:),sheetname,'D2');
+                    xlswrite(filed,class_number(outperm,:),sheetname,'E2');
+                    xlswrite(filed,name_class(outperm,:),sheetname,'F2');
+                    xlswrite(filed,tax',sheetname,'G1');
+                    xlswrite(filed,z(outperm,:).*major_all(outperm,:),sheetname,'G2');
+                    
+                    sheetname='Clusters mass proxy 10th occ.';
+                    xlswrite(filed,{'Cluster row'},sheetname,'A1');
+                    xlswrite(filed,Cluster_row,sheetname,'A2');
+                    xlswrite(filed,name_class,sheetname,'B2');
+                    xlswrite(filed,tax',sheetname,'C1');
+                    xlswrite(filed,major_cla.*major_cla_all,sheetname,'C2');
+                    
+                    Y=10;
+                    f2=barh(X,Y);
+                    saveas(f2,'Den writing data.pdf');
+                    
+                    sheetname='Clusters occ. rate of elements';
+                    xlswrite(filed,{'Cluster row','Occurrence in cluster rate of all elements(ratio)'},sheetname,'A1');
+                    xlswrite(filed,Cluster_row,sheetname,'A2');
+                    xlswrite(filed,name_class,sheetname,'B2');
+                    xlswrite(filed,tax',sheetname,'C1');
+                    xlswrite(filed,x,sheetname,'C2');
+                    
+                    sheetname='Clusters mass con. of elements';
+                    xlswrite(filed,{'Cluster row','Total mass concentration of all elements(ug/ml)'},sheetname,'A1');
+                    xlswrite(filed,Cluster_row,sheetname,'A2');
+                    xlswrite(filed,name_class,sheetname,'B2');
+                    xlswrite(filed,tax',sheetname,'C1');
+                    xlswrite(filed,mean_class_con,sheetname,'C2');
+                    
+                    
+                    
+                    Y=50;
+                    f2=barh(X,Y);
+                    saveas(f2,'Den writing data.pdf');
+
+                    
+                    dat=z';
+                    std=z_std';
+                    dat=dat(:,outperm);
+                    std=std(:,outperm);
+                    tdata=name_class(outperm,:);
+                    sizd=size(dat);
+                    comb=nan(sizd(1),2*sizd(2));
+                    %name=nan(1,2*sizd(2));
+                    name={};
+                    for i=1:sizd(2)
+                        comb(:,2*i-1)=dat(:,i);
+                        comb(:,2*i)=std(:,i);
+                        name=cat(1,name,tdata(i));
+                        name=cat(1,name,{''});
+                    end
+                    
+                    comb(comb==0)=nan;
+                    xlswrite(filed,{'Data'},'Sort proxy Norm and error','A1');
+                    xlswrite(filed,comb','Sort proxy Norm and error','B2');
+                    xlswrite(filed,name,'Sort proxy Norm and error','A2');
+                    xlswrite(filed,tax','Sort proxy Norm and error','B1');
+                    
+                    dat=major_cla';
+                    std=major_cla_std';
+                    
+                    dat=dat(:,outperm);
+                    std=std(:,outperm);
+                    tdata=name_class(outperm,:);
+                    sizd=size(dat);
+                    comb=nan(sizd(1),2*sizd(2));
+                    %name=nan(1,2*sizd(2));
+                    name={};
+                    for i=1:sizd(2)
+                        comb(:,2*i-1)=dat(:,i);
+                        comb(:,2*i)=std(:,i);
+                        name=cat(1,name,tdata(i));
+                        name=cat(1,name,{''});
+                    end
+                    comb(comb==0)=nan;
+                    xlswrite(filed,{'Data'},'Sort 10th proxy Norm and error','A1');
+                    xlswrite(filed,comb','Sort 10th proxy Norm and error','B2');
+                    xlswrite(filed,name,'Sort 10th proxy Norm and error','A2');
+                    xlswrite(filed,tax','Sort 10th proxy Norm and error','B1');
+                    
+                    Y=80;
+                    f2=barh(X,Y)
+                    saveas(f2,'Den writing data.pdf')
+                    
+                end
+                
+                
+                [A1,A2,B1,B2]=exgen(tcsize(1),1);
+                xlswrite(filed,{'Median mass (ng)'},'single element',A1);
+                xlswrite(filed,tc(:,1),'single element',A2);
+                xlswrite(filed,tax','single element',B1);
+                xlswrite(filed,med_NP_All,'single element',B2);
+                
+                [A1,A2,B1,B2]=exgen(tcsize(1),2);
+                xlswrite(filed,{'mean mass (ng)'},'single element',A1);
+                xlswrite(filed,tc(:,1),'single element',A2);
+                xlswrite(filed,tax','single element',B1);
+                xlswrite(filed,mean_NP_All,'single element',B2);
+                
+                [A1,A2,B1,B2]=exgen(tcsize(1),3);
+                xlswrite(filed,{'Con. (particles/ml)'},'single element',A1);
+                xlswrite(filed,tc(:,1),'single element',A2);
+                xlswrite(filed,tax','single element',B1);
+                xlswrite(filed,sum_NP_one_All,'single element',B2);
+                
+                [A1,A2,B1,B2]=exgen(tcsize(1),4);
+                xlswrite(filed,{'std. Con. (particles/ml)'},'single element',A1);
+                xlswrite(filed,tc(:,1),'single element',A2);
+                xlswrite(filed,tax','single element',B1);
+                xlswrite(filed,sum_NP_one_std_All,'single element',B2);
+                
+                [A1,A2,B1,B2]=exgen(tcsize(1),5);
+                xlswrite(filed,{'mass Con.  (ug/ml)'},'single element',A1);
+                xlswrite(filed,tc(:,1),'single element',A2);
+                xlswrite(filed,tax','single element',B1);
+                xlswrite(filed,(sum_NP_one_All.*mean_NP_All)/1000,'single element',B2);
+                
+                [A1,A2,B1,B2]=exgen(tcsize(1),6);
+                xlswrite(filed,{'std. mass Con.  (ug/ml)'},'single element',A1);
+                xlswrite(filed,tc(:,1),'single element',A2);
+                xlswrite(filed,tax','single element',B1);
+                xlswrite(filed,(sum_NP_one_std_All.*mean_NP_All)/1000,'single element',B2);
+                
+                [A1,A2,B1,B2]=exgen(tcsize(1),7);
+                xlswrite(filed,{'std. Median mass (ng)'},'single element',A1);
+                xlswrite(filed,tc(:,1),'single element',A2);
+                xlswrite(filed,tax','single element',B1);
+                xlswrite(filed,std_NP_All,'single element',B2);
+                
+                [A1,A2,B1,B2]=exgen(tcsize(1),8);
+                xlswrite(filed,{'raw number of event detected'},'single element',A1);
+                xlswrite(filed,tc(:,1),'single element',A2);
+                xlswrite(filed,tax','single element',B1);
+                xlswrite(filed,raw_sum_NP_one_All,'single element',B2);
+                
+                Y=100;
+                f2=barh(X,Y)
+                saveas(f2,'Den writing data.pdf')
+                
+                %set(gcf,'position',[x3,y3,width3,height3])
+                
+                app.HCLamp.Color = [0 1 0] ;
+            end
+            
+            
+            
+            
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%End process lines
+            
+            xlswrite(filed,{app.NanoFinder556Label.Text},'Read me AIO','B15');
+            xlswrite(filed,{'total time (s)'},'Read me AIO','A14');
+            xlswrite(filed,toc,'Read me AIO','B14');
+            
+            Yy=100;
+            f4=figure;
             X = categorical({'Analysis'});
             X = reordercats(X,{'Analysis'});
-            f4=barh(X,Yy)
-            title('All analysis (%)')
-            saveas(f4,'All analysis.pdf')
-            
-            
-            
+            f4=barh(X,Yy);
+            title('All analysis (%)');
+            saveas(f4,'All analysis.pdf');
             
             app.Lamp.Color = [0 1 0] ;
-            %End of code
             
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%End of code%%%%%%%%
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Start of Functions
             function [tc]=read_replicate(typ,replicatN,filed)
                 tc=[];
                 if strcmpi(typ,'h5')
@@ -863,24 +1201,28 @@ classdef NanoFinder < matlab.apps.AppBase
                 
                 
                 tc=reshape(tc',replicatN,[])';
-                %xlswrite(filed,tc,'Single Names','A2'); % error happen if the number of file couldnt be reshape in the size which is specifyed for data
                 xlswrite(filed,tc,'Filename','B2');
             end
             
             function[tc]=read_file(filed)
                 [~,tc]=xlsread(filed,'Filename');
-                %tc = reshape(tc',[],1)
-                %xlswrite(filed,tc,'Single Names','A2');
+
             end
             
-            function [sample]=Datasize(num,st,ed)
+            function [sample,st,ed]=Datasize(num,st,ed)
                 b=size (num);
-                if 0==(st-ed)
+                if and(0==st,0==ed)
                     sample=num;
+                    st=1;
+                    ed=b(1);
+                elseif 0==st
+                    sample=num(1:ed,:);
+                    st=1;
+                elseif 0==ed
+                    sample=num(st:end,:);
+                    ed=b(1);
                 elseif and (st<ed,b(1)>=(st-ed))
-                    %  dropb1=num(3960:11880,:); % ~8second droplet 50*8=400 drolet
                     sample=num(st:ed,:);
-                    %  dropb2=num(1:2,:);
                     
                 else
                     error(' Not a suatable file size. try to change start and end data row')
@@ -888,84 +1230,57 @@ classdef NanoFinder < matlab.apps.AppBase
                 
             end
             
-            function []=writedata(dropb1,sample,dropb2,diss,txt,strn)
-                xlswrite([strn{:}],txt,'2-sample')
-                xlswrite([strn{:}],sample,'2-sample','A2')
-                xlswrite([strn{:}],txt','diss count')
-                xlswrite([strn{:}],diss','diss count','B1')
-                xlswrite([strn{:}],txt,'1-Droplet burst1')
-                xlswrite([strn{:}],dropb1,'1-Droplet burst1','A2')
-                xlswrite([strn{:}],txt,'3-Droplet burst2')
-                xlswrite([strn{:}],dropb2,'3-Droplet burst2','A2')
-            end
-            
+
             function []=NEWwritedata(sample,txt,strn)
                 
                 stre = strcat(strn,{'.raw.csv'});
-                    files=[stre{:}];
-                    titll=el_sim(txt);
-                    %Allnpv=cat(3,Allnpv,npv);
-                    sdw = array2table(sample);
-                    sdw.Properties.VariableNames=titll;
-                    writetable(sdw,files,'Delimiter',',')
+                files=[stre{:}];
+
+                sdw = array2table(sample);
+                sdw.Properties.VariableNames=txt;
+                writetable(sdw,files,'Delimiter',',')
             end
             
-            function [num]=usable_data(list,table,listnew,WF)
+            function [num,raw_WF,raw_name]=usable_data(list,table,listnew,WF)
                 sizelist=size(list);
                 sizetlistnew=size(listnew);
                 sizetable=size(table);
                 k=0;
-                num=zeros(sizetable(1),sizetlistnew(2));
-                
-                for id=1:sizetlistnew(2)
-                    minilist=give_names(listnew(id));
-                    sizeminilist=size(minilist);
+                num=zeros(sizetable(1),sizetlistnew(1));
+                raw_WF=[];
+                raw_name=[];
+                for id=1:sizetlistnew(1)
+
+                    minilist=listnew(id,:);
+                    indexE=find(~cellfun(@isempty,minilist));
+                    sizeminilist=size(indexE);
                     for y=1:sizeminilist(2)
                         for jd=1:sizelist(1)
                             if isequal(minilist(y),list(jd))
+                                %size(WF)
                                 num(:,id)=num(:,id)+table(:,jd)*WF;
+                                raw_WF=cat(2,raw_WF,table(:,jd)*WF);
+                                raw_name=cat(2,raw_name,minilist(y));
                                 break
                             elseif jd==sizelist(1)
                                 el=string(minilist(y));
-                                msg=strcat(el,'didnt exist in mass table');
-                                error(msg);
+                                msg=strcat(el,' didnt exist in mass table')
+                                error('Break');%%%%%%%%%rise an error
+
                             end
                         end
                     end
                 end
             end
             
-            function [minilist]=give_names(st)
-                stl=st{:};
-                x=size(stl);
-                plus_position=0;
-                minilist={};
-                k=0;
-                for i=1:x(2)
-                    if stl(i)=='+'
-                        if i==plus_position(k+1)+1 % correction for more than 1 plus (+)
-                            plus_position(end)=i;
-                            minilist=minilist(1:end-1);
-                            minilist(end+1)=cellstr(stl(1+plus_position(k):plus_position(k+1)));
-                        else
-                            k=k+1;
-                            plus_position(k+1)=i;
-                            minilist(end+1)=cellstr(stl(1+plus_position(k):plus_position(k+1)));
-                        end
-                    end
-                end
-            end
             
-            function [sample,diss,strn,num]= Readtof(typ,strn,listnew,WF,st,ed)
+            function [sample,diss,strn,WF,st,ed]= Readtof(typ,strn,listnew,WF,st,ed)
                 if strcmpi(typ,'csv')
-                    %WF=1; %for CSV assumtion is its already multiplyied by waveform number so we cancel this
                     strn = strcat(strn,{'.csv'});
                     [table,list] = xlsread([strn{:}]);
-                    %table=table (:,2:end); %removing the time bin
-                    %list=list(2:end); %removing the time bin
+
                     list=list'; % Because H5 file are this way so we need to keep it constant
                     strn = erase(strn,".csv");
-                    %strn = strcat(strn,{'.xlsx'});
                 else
                     if strcmpi(typ,'h5')
                         [list,table]=hd5fileread(strn);
@@ -979,41 +1294,26 @@ classdef NanoFinder < matlab.apps.AppBase
                 if WF==0
                     h5_filenamem = [strn '.h5'];
                     %WF=65;
-                    WF = h5readatt(h5_filenamem,'/','NbrWaveforms');
+                    WF = h5readatt(h5_filenamem,'/','NbrWaveforms'); %%%Error is due to wrong integration_window input
                     WF=double(WF);
                 end
                 
-                num=usable_data(list,table,listnew,WF);
-                [sample]=Datasize(num,st,ed);
+                [num,raw_WF,raw_name]=usable_data(list,table,listnew,WF);
+                [sample,st,ed]=Datasize(num,st,ed);
                 
-                NEWwritedata(sample,listnew,strn);
+                NEWwritedata(raw_WF,raw_name,strn);
                 
-                sample(sample<0)=0; % add for S-TOF issue
-                
-                %b=size (num)
-                %Correction for disslolve signal
-                %for i=1:b(2)
+                sample(sample<0)=0; % added for S-TOF issue
+   
                 diss=mean(sample,1);
-                %dropb1(:,i)=dropb1(:,i)-diss(i);
-                %dropb2(:,i)=dropb2(:,i)-diss(i);
-                %end
-                
+
                 strn = strcat(strn,{'.csv'});
-                
-                %xlswrite([strn{:}],listnew,'All')
-                %csvwrite([strn{:}],listnew,1,1)
-                %xlswrite([strn{:}],num,'All','A2')
-                %csvwrite([strn{:}],num,1,0)
-                
-                %dropb1=sample;
-                %dropb2=sample;
-                %writedata(dropb1,sample,dropb2,diss,listnew,strn)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
                 
             end
             
             function [peakList,data]=hd5fileread(h5_filename)
-                % hd5fileread function getting a hf file name in the format of {'filename'}
-                % and return the data(peaktable) and peaklist of that file
+
                 h5_filename = [h5_filename '.h5']; %[h5_filename{:}]
                 data = h5read(h5_filename,'/PeakData/PeakData');
                 dh5=size(data);
@@ -1043,16 +1343,10 @@ classdef NanoFinder < matlab.apps.AppBase
                 
                 peakTable = h5read(h5_filename,'/PeakData/PeakTable');
                 peakList = peakTable(2,:)';
-                %peakLabel = peakTable.label';
-                %peakList = cell(size(peakLabel,1),1);
-                %NbrMasses = size(peakLabel,1);
-                %for peak = 1:size(peakLabel,1)
-                %    % the ASCII <0>/NUL is used to split the string here, therefore char(0)
-                %    [label, ~] = strsplit(peakLabel(peak,:),char(0)) ;
-                %    peakList(peak) = label(1);
-                %end
+
             end
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Split event
             function [Binary_split,data_split]=split_correct(name_function,Completed_data,file,txt,Alfat,Scs)
                 %'Alfat' is for correcting for the background signal of droplet so if you do further correction it dosent effect but if you already correct for it consider puting zeros
                 if strcmpi(name_function,'oneBF')
@@ -1161,10 +1455,7 @@ classdef NanoFinder < matlab.apps.AppBase
                                 Binary_detection(j+1,i)=-1; % to make sure next line dosent repated
                                 Binary_detection(j,i)=0;
                             end
-                            
-                            %NP_detection(j,:)= sum(NP_detection(j:j+1,:))-Th;
-                            %NP_detection(j+1,:)=0;
-                            %Binary_detection(j+1,:)=0;
+
                         end
                     end
                     
@@ -1188,16 +1479,7 @@ classdef NanoFinder < matlab.apps.AppBase
                         S=size (Data_sort);
                         %Alfa=0.013;
                         Th(i)=Data_sort(round(S(1)*Alfa));
-                        %Avg_data= mean(Data);
-                        %Std_data=std(Data);
-                        %Three_sigma=Avg_data+3*Std_data
-                        
-                        %for i=1:S(2)
-                        %    if Three_sigma(i)>Th(i)
-                        %Th(i)=Four_sigma(i)
-                        %        Th(i)=Three_sigma(i);
-                        %    end
-                        %end
+
                     end
                 end
                 xlswrite(file,Th,tt,'A3');
@@ -1229,14 +1511,10 @@ classdef NanoFinder < matlab.apps.AppBase
                         NP_single=zeros(1,S(2));
                     end
                 end
-                %xlswrite(file,txt,'Binary_detection','A1');
-                %xlswrite(file,Binary_detection(1:k,:),'Binary_detection','A2');
-                %xlswrite(file,txt,'NP_detection','A1');
-                %xlswrite(file,NP_detection(1:k,:),'NP_detection','A2');
-                %xlswrite(file,txt,'NP_complete','A1');
-                %xlswrite(file,NP_complete(1:k,:),'NP_complete','A2');
+
             end
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Top finder
             function [sumNp,avgNp,TrueDiss,pNp,Np,Binary_detection]=Top_finder(num,data_comp)
                 
                 data=data_comp;
@@ -1263,6 +1541,7 @@ classdef NanoFinder < matlab.apps.AppBase
             end
             
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%correlation
             function [Cor_matrix,Cor_p_value]=correlation_coefs (Binary_detection,NP_complete,file,txt)
                 bd=Binary_detection;
                 bd(bd==0)=nan;
@@ -1281,89 +1560,20 @@ classdef NanoFinder < matlab.apps.AppBase
                 end
                 Cor_matrix=round(Cor_matrix,2);
                 Cor_p_value=round(Cor_p_value,4);
-                
-                sizeCompleted_data=size(NP_complete);
-                %[con_matrix,des_matrix]=concurrent(NpN_matrix,sizeCompleted_data(1));
+
                 
                 
                 xlswrite(file,txt,'Cor cof','B2');
                 xlswrite(file,txt','Cor cof','A3');
                 xlswrite(file,Cor_matrix,'Cor cof','B3');
-                %xlswrite(file,txt,'p-value','B2');
-                %xlswrite(file,txt','p-value','A3');
-                %xlswrite(file,Cor_p_value,'p-value','B3');
+
                 xlswrite(file,txt,'NP Number','B2');
                 xlswrite(file,txt','NP Number','A3');
                 xlswrite(file,NpN_matrix,'NP Number','B3');
-                %xlswrite(file,txt,'Concurrent','B2');
-                %xlswrite(file,txt','Concurrent','A3');
-                %xlswrite(file,con_matrix,'Concurrent','B3');
-                %xlswrite(file,txt,'Con NPN compare','B2');
-                %xlswrite(file,txt','Con NPN compare','A3');
-                %xlswrite(file,des_matrix,'Con NPN compare','B3');
+
                 
             end
             
-            function [con_matrix,des_matrix]=concurrent(NpN_matrix,datasize)
-                x=size(NpN_matrix);
-                con_matrix=zeros(x(1));
-                des_matrix=zeros(x(1));
-                for i=1:x(1)
-                    for j=i:x(1)
-                        if i==j
-                            con_matrix(i,j)=NpN_matrix(i,j);
-                            des_matrix(j,i)=100;
-                        else
-                            y=round(NpN_matrix(i,i)*NpN_matrix(j,j)/datasize);
-                            con_matrix(i,j)=y;
-                            con_matrix(j,i)=y;
-                            if NpN_matrix(i,j)>y
-                                z=round(100*(NpN_matrix(i,j)-y)/max(NpN_matrix(i,i),NpN_matrix(j,j)));
-                            else
-                                z=0;
-                            end
-                            des_matrix(j,i)=z;
-                            des_matrix(i,j)=z;
-                        end
-                    end
-                end
-                
-            end
-            function [Data_final,Th,sum_datad,Datad]=Bumper(data,alfa,sumfac,alfac)
-                %Data=[1,4 75;61,7 2;106 5,16;12 13 54;0 9 6]
-                Datad=data;
-                Avg_data=median(data);
-                Data_size=size(Datad);
-                Data_sort=sort(Datad,1,'descend');
-                Th=Data_sort(round(Data_size(1)*alfa),:);
-                Datad(Datad<=Th)=0;
-                Datad(Datad>Th)=1;
-                for i=1:(Data_size(1)-sumfac+1)
-                    Datad(i,:)=sum(Datad(i:(i+sumfac-1),:));
-                end
-                for i=(Data_size(1)-sumfac):Data_size(1)
-                    Datad(i,:)=Datad((Data_size(1)-sumfac+1),:);
-                end
-                x=alfa*sumfac*alfac; %% important facotr
-                Datad(Datad<x)=0;
-                Datad(Datad>=x)=1;
-                sum_datad=sum(Datad);
-                Datad_neg=ones(Data_size)-Datad;
-                Data_final=data.*Datad_neg+Avg_data.*Datad;
-            end
-            
-            function [Th_final_lamda,Ths_final_value,Th_final_value,Th_final]=Count_to_Gaussian(Total_sample,Th_final_lamda,Ths_final_value,Th_final_value,Count_limit,Th_final)
-                x=size(Total_sample);
-                
-                std_Sample=std(Total_sample,0,1);
-                std_Sample=squeeze(std_Sample)'; % Trikey I plan around to make it possible
-                ind=find(Th_final_lamda>Count_limit);
-                Th_final_value(ind)=Th_final_lamda(ind)+(3*std_Sample(ind));
-                Ths_final_value(ind)=Th_final_lamda(ind)+(2.8*std_Sample(ind));
-                Th_final(ind)=0;
-                
-                % desighed on 2020,02,21 to limited the problem of large background on naoparticle detection
-            end
             
             function [A1,A2,B1,B2]=exgen(Siz,num)
                 pos=(Siz+1)*(num-1);
@@ -1375,6 +1585,7 @@ classdef NanoFinder < matlab.apps.AppBase
             
             
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Functions concurency
             function [List_3,last_write_pos]=Squeez_Write(tc,ti,List_2,fac2,filed,base,tax,name_add)
                 sizelist=size(List_2);
                 List_3={};
@@ -1386,7 +1597,7 @@ classdef NanoFinder < matlab.apps.AppBase
                         out=sortrows(out,2,'descend');
                         dc=out(:,2);
                         dc(dc<fac2)=0;
-                        dc(dc>=fac2)=1; 
+                        dc(dc>=fac2)=1; %'fac' is a variable defined by user and it will keep only nanoparticle type which happened equal or more tnan 'fac' times.
                         dcsum=sum(dc);
                         if dcsum>0
                             out=out(1:dcsum,:);
@@ -1449,7 +1660,9 @@ classdef NanoFinder < matlab.apps.AppBase
                 end
             end
             
-                        
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Rest
+            
             
             function [List_2, layer_data,out,nns]=unic_num(NPdata,fac,base)
                 sizennpv=size(NPdata);
@@ -1661,12 +1874,18 @@ classdef NanoFinder < matlab.apps.AppBase
             
             function [table_name]=el_sim(tab)
                 lentab=length(tab);
-                match = ["[",']','0','1','2','3','4','5','6','7','8','9'];
+                match = ['[',']','+',':','*',"'",'0','1','2','3','4','5','6','7','8','9','+'];
+                %match = ["[",']'];
                 table_name=[];
                 for i=1:lentab
                     x=tab{i};
                     [ii,jj,kk]=unique(x);
                     ii=erase(ii,match);
+                    if ~isnan(find(strcmp(table_name,ii)))
+                        match2=['[',']','+',':','*',"'"];
+                        ii=x;
+                        ii=erase(ii,match2);
+                    end
                     table_name=cat(1,table_name,{ii});
                 end
                 
@@ -1674,12 +1893,18 @@ classdef NanoFinder < matlab.apps.AppBase
             
             function [table_name]=el_sim_two(tab)
                 lentab=length(tab);
-                match = ["[",']','0','1','2','3','4','5','6','7','8','9','+'];
+                match = ['[',']','+',':','*',"'",'0','1','2','3','4','5','6','7','8','9','+'];
+                %match = ["[",']','+'];
                 table_name=[];
                 for i=1:lentab
                     x=tab{i};
                     [ii,jj,kk]=unique(x);
                     ii=erase(ii,match);
+                    if ~isnan(find(strcmp(table_name,ii)))
+                        ii=x;
+                        match2=["[",']','+',':','*',"'"];
+                        ii=erase(ii,match2);
+                    end
                     table_name=cat(1,table_name,{ii});
                 end
                 
@@ -1759,53 +1984,112 @@ classdef NanoFinder < matlab.apps.AppBase
                     end
                 end
             end
-            
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Classy Linkage
-            
-            function data_classy(NPdata_con,tax,file,cutof)
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Cluster
+    
+            function [class_number,class_store,name_class,act_all,max_all,cla_all,cla_std_all,cal_max_all]=data_classy_big(NPdata_con,tax,file,cutof,fx_max,COF,PCC,PCF,cycles)
                 hoof=NPdata_con;
                 hoof(hoof>0)=1;
+                size_hoof=size(hoof);
+                sum_hoof=sum(hoof,1);
+                general_binary_Chance=sum_hoof./size_hoof(1);
                 sg=sum(hoof,2);
-                ind=find(sg>1);
-                good_NP=NPdata_con(ind,:);
-                %Binary_good_NP=good_NP;%%%%
-                %Binary_good_NP(Binary_good_NP==0)=3.5;%%%%%
-                %Binary_good_NP=log(Binary_good_NP)/log(3.5);%%%%%%%
+                
+                ind_2=find(sg>1);
+                good_NP=NPdata_con(ind_2,:);
+
                 sizg=size(good_NP)
+                
                 if sizg(1)>1
-                    Z = linkage(good_NP,'average','correlation');%%%%%% Binary_
+
                     
-                    %fx=20;
-                    %c = cluster(Z,'Maxclust',20); in case of fixed number of classes
+                    
+                    Z = linkage(good_NP,'average','correlation');%%%%%% Binary_
                     c = cluster(Z,'Cutoff',cutof,'criterion','distance');
-                    %c = cluster(Z,'maxclust',cutof);
-                    %[c,f] = kmeans(good_NP,cutof,'Distance','correlation');%%%%
+
+                    
                     fx=max(c);
                     histogram(c)
-                    if fx<30
-                        %class_store=[];
+                    if fx<fx_max
+                        class_store=[];
+                        name_class=[];
+                        class_number=[];
+                        act_all=[];
+                        act_all_gen=[];
+                        max_all=[];
+                        cal_max_all=[];
+                        cla_all=[];
+                        cla_std_all=[];
+                        %Lazy part of the code
+                        sdds=[];
                         for i=1:fx
                             inde=find(c==i);
                             df=good_NP(inde,:);
-                            sheetname=strcat('class ',num2str(i));
-                            [nmedian,sumNP,sumbinary_Chance]=correlation_coefs_modified(df,file,tax',[sheetname,' sum']);
-                            xlswrite(file,df,sheetname,'A2');
-                            xlswrite(file,tax',sheetname,'A1');
-                            %classD=nmedian;
-                            %classD=cat(3,classD,sumNP);
-                            %classD=cat(3,classD,sumbinary_Chance);
+                            sheetname=strcat('Class',num2str(i));
+                            [~,~,~,sumee]=correlation_coefs_modified_big(df,file,tax',[sheetname,' sum']);
+                            sdds=cat(1,sdds,sumee);
                         end
-                        %class_store=cat(1,class_store,classD);
-                        %xlswrite(file,tax','NP','A1');
-                        %xlswrite(file,NPdata_con,'NP','A2');
+                        for ifa=1:fx
+                            inde=find(c==ifa);
+                            df=good_NP(inde,:);
+                            sheetname=strcat('Class',num2str(ifa));
+                            [number_NP,nmedian,sumNP,sumbinary_Chance]=correlation_coefs_modified_big(df,file,tax',[sheetname,' sum']);
+                            
+                            dfss=size(df);
+                            [className,act,subclass_name]=className_function_3(file,tax,sumbinary_Chance,general_binary_Chance,COF,PCC,PCF,sdds,sumNP,dfss(1));
+                            [~,act_gen,~]=className_function_3(file,tax,sumbinary_Chance,general_binary_Chance,COF,PCC,PCF/10,sdds,sumNP,dfss(1));
+                            
+                            [rat_f_med,org_f_med,std_rat_f_med,med_max_med,mea_f]=median_finder(df,sumbinary_Chance,act,cycles);
+                            [rat_f_med_gen,~,std_rat_f_med_gen,med_max_med_gen,~]=median_finder(df,sumbinary_Chance,act_gen,cycles);
+
+                            cla=rat_f_med_gen;
+                            cla_std=std_rat_f_med_gen;
+                            
+                            
+                            
+                            name_class=cat(1,name_class,className);
+                            act_all=cat(1,act_all,act);
+                            act_all_gen=cat(1,act_all_gen,act_gen);
+                            class_number=cat(1,class_number,number_NP);
+                            
+                            df(df==0)=nan;
+                            std_df=nanstd(df,1);
+                            
+                            
+                            %   important
+                            sheetname=strcat(num2str(ifa),subclass_name);
+                            
+                            xlswrite(file,df,sheetname,'A2'); %%
+                            xlswrite(file,tax',sheetname,'A1');%%
+
+                            
+                            max_all=cat(1,max_all,med_max_med);
+                            cal_max_all=cat(1,cal_max_all,med_max_med_gen);
+                            cla_all=cat(1,cla_all,cla);
+                            cla_std_all=cat(1,cla_std_all,cla_std);
+                            
+                            classD=nmedian;
+                            classD=cat(3,classD,sumNP);
+                            classD=cat(3,classD,sumbinary_Chance);
+                            classD=cat(3,classD,rat_f_med);
+                            classD=cat(3,classD,org_f_med);
+                            classD=cat(3,classD,std_rat_f_med);
+                            classD=cat(3,classD,mea_f);
+                            
+                            len_NPs=length(sumNP);
+                            std_df(end+1:len_NPs)=NaN;
+                            classD=cat(3,classD,std_df);
+                            class_store=cat(1,class_store,classD);
+                            
+                        end
+
                     else
-                        error='you have more than 30 class so it didnt store them in'
+                        error='you have more than "fx_max number" of Cluster so it didnt store them in'
                     end
                 end
             end
             
-            function [nmedian,sumNP,sumbinary_Chance]=correlation_coefs_modified (NPD,file,txt,Class_name)
+            function [number_NP,nmedian,sumNP,sumbinary_Chance]=correlation_coefs_modified_big (NPD,file,txt,Class_name)
                 %adopted from AOI V7.1 on 2020.02.28 and changed
                 Binary_detection=NPD;
                 Binary_detection(Binary_detection>0)=1;
@@ -1813,8 +2097,8 @@ classdef NanoFinder < matlab.apps.AppBase
                 
                 S=size(Binary_detection);
                 sumbinary=sum(Binary_detection,1);
-                sumbinary_Chance=sumbinary/S(1)*100;
-                
+                sumbinary_Chance=sumbinary/S(1);
+                number_NP=S(1);
                 bd=Binary_detection;
                 bd(bd==0)=nan;
                 NP=NPD.*bd;
@@ -1837,44 +2121,279 @@ classdef NanoFinder < matlab.apps.AppBase
                 sumNP=sum(Binary_detection,1);
                 
                 Bomb=[{'number'},txt,{'Corelation'},txt];
-                sumbinary_Chance=round(sumbinary_Chance,2);
+                sumbinary_Chance=round(sumbinary_Chance,4);
                 
                 Bomb_data=NpN_matrix;
                 Bomb_data=cat(2,Bomb_data,nan(S(2),1));
                 if S(1)>1
                     Bomb_data=cat(2,Bomb_data,Cor_matrix);
                 end
-                xlswrite(file,txt,Class_name,'B1');
-                xlswrite(file,Bomb,Class_name,'A6');
-                xlswrite(file,{'Median nanzero';'SumNP';'Presence(%)'},Class_name,'A2');
-                xlswrite(file,nmedian,Class_name,'B2');
-                xlswrite(file,sumNP,Class_name,'B3');
-                xlswrite(file,sumbinary_Chance,Class_name,'B4');
-                
-                xlswrite(file,txt',Class_name,'A7');
-                xlswrite(file,Bomb_data,Class_name,'B7');
+
             end
+
             
-            function [npv_new,tax,elem_list]=select_Concurency(npv,tx,udt,mec)
-                b_nev=npv;
-                b_nev(b_nev>0)=1;
-                sum_b_nev=sum(b_nev);
-                [out,idx] = sort(sum_b_nev,'descend');
+            function [className,act,subclass_name]=className_function_3(file,tax,sumbinary_Chance,general_binary_Chance,COF,PCC,PCF,sdds,sumNP,sdf)
+                %at two condition an element will be included in the class
+                re_l=length(tax);
+                for i=1:re_l
+                    c=tax{i};
+                    newChr = strrep(c,'+','-');
+                    tax(i)={newChr};
+                end
+
                 
-                xs=find(out>udt); % find elements with more than "udt" event
+                CH=size(sumbinary_Chance);
                 
-                size_xs=length(xs);
-                if size_xs<=mec
-                    elem_list=idx(xs);
-                else
-                    elem_list=idx(xs(1:mec));
+                
+                %3
+                act=zeros(CH);
+                for j=1:CH(2)
+                    %if and(sumbinary_Chance(j)>=medxd(j),sumbinary_Chance(j)>PCF)
+                    if sumbinary_Chance(j)>PCF
+                        %  if sumbinary_Chance(j)>PCF
+                        act(j)=1;
+                        %   end
+                    end
                 end
                 
-                npv_new=npv(:,elem_list);
-                tax=el_sim(tx(elem_list,1));
+                [out,idx] = sort(sumbinary_Chance.*act,'descend');
+                out(out>0)=1;
+                sumout=sum(out);
+                
+                %ind_max=find(sumbinary_Chance==max(sumbinary_Chance));
+                className={join([file(1:end-13)])};
+                if sumout>=3
+                    className={join([className{:},tax{idx(1:3)}])};
+                    subclass_name=join([tax{idx(1:3)}]);
+                else
+                    className={join([className{:},tax{idx(1:sumout)}])};
+                    subclass_name=join([tax{idx(1:sumout)}]);
+                end
                 
             end
             
+            function [mean_NP,med_NP,con_NP_one,con_NP_one_std,std_NP,sum_NP_one]=Single_element_NP(NPdata_con,q_plasma,Time_M)
+                snp=NPdata_con;
+                snp(snp>0)=1;
+                
+                sum_NP=sum(snp,2);
+                ind_one=find(sum_NP==1);
+                snp=snp(ind_one,:);
+                mass_snp=NPdata_con(ind_one,:);
+                sum_NP_one=sum(snp,1);
+                
+                mean_NP=sum(mass_snp,1)./sum_NP_one;
+                
+                con_NP_one=sum_NP_one/q_plasma/Time_M;
+                con_NP_one_std=sum_NP_one.^(1/2)/q_plasma/Time_M;
+                
+                mass_snp(mass_snp==0)=NaN;
+                med_NP=nanmedian(mass_snp,1);
+                std_NP=nanstd(mass_snp,1);
+            end
+            
+            function [rat_f_med,org_f_med,std_rat_f_med,med_max_med,mea_f]=median_finder(df,chance,act,cycles)
+                size_df=size(df);
+                rat_final=nan([cycles,size_df(2)]);
+                org_final=nan([cycles,size_df(2)]);
+                std_final=nan([cycles,size_df(2)]);
+                mea_final=nan([cycles,size_df(2)]);
+                
+                bi_act=act;
+                bi_act(bi_act>0)=1;
+                
+                indx_max=find(chance==max(chance));
+                indx_max=indx_max(1);
+                
+                
+                indx=find(bi_act>0);
+                fingers=length(indx);
+                
+                mea_f=mean(df,1);
+                df(df==0)=nan;
+                
+                for i=1:fingers
+                    [rat,org,std]=elm_med_two(cycles,df,indx(i),indx_max);
+                    if indx_max==indx(i)
+                        med_max=org;
+                    end
+                    rat_final(:,indx(i))=rat;
+                    org_final(:,indx(i))=org;
+                    std_final(:,indx(i))=std;
+                end
+                std_rat_f_med=nanmedian(std_final,1);
+                rat_f_med=nanmedian(rat_final,1);
+                org_f_med=nanmedian(org_final,1);
+                med_max_med=nanmedian(med_max,1); %error in this line related to the fact that you change one of the classes in a way that there is no nanoparitlce in it any more
+                %mea_f=nanmean(mea_final,1);
+            end
+            
+            function [rat,org,std]=elm_med_two(cycles,df,indx_finger,indx_max)
+                rat=[];
+                org=[];
+                df_finger=df(:,indx_finger);
+                df_max=df(:,indx_max);
+                df_rat=df_finger./df_max;
+                rat=nanmedian(df_rat,1);
+                org=nanmedian(df_max,1);
+                std=nanstd(df_rat,1);
+            end
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%SIS_Hist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            function []=SIS_Line_exp(filed)
+                % 2021.03.07 SIS_HIS %
+                % Kamyar Mehrabi % kamyarm@ethz.ch
+                % ETH Zurich %
+                
+                %tic % time start
+                [SIS,His]=xlsread(filed,'SIS Hist');
+                [Line,tex_Line]=xlsread(filed,'Line');
+                Line=sort(Line,1,'descend');
+                
+                SIS_h=SIS(:,1:2);
+                SIS_value = sum(SIS_h(:,1).*SIS_h(:,2),1) / sum(SIS_h(:,2));
+                
+                [ex_SIS_Hist]=Full_SIS_Hist(SIS_h);
+                
+                Message='Single ion signal processing'
+                Nmp=round(1/min(Line(:,1))*100);
+                %Nmp=10000000
+                %lmd2=0.5;
+                
+                %%%generating lmd Histogram
+                
+                st_lmd2=0.34;
+                ed_lmd2=5;
+                sp_lmd2=20;
+                [lmd2]=lmd_gen(st_lmd2,sp_lmd2,ed_lmd2);
+                lmd=lmd2.*lmd2;
+
+                Gen_lmd_Hist=[];
+                
+                size_lmd=size(lmd);
+                for iup=1: size_lmd(2)
+                    Pos_serie=Give_Pos(Nmp,lmd(1,iup));% get nummber of bin and lmda and give Pos serie
+                    sum(Pos_serie);
+                    [lmd_Hist]=Monto(Pos_serie,ex_SIS_Hist,SIS_value);
+                    
+                    Gen_lmd_Hist=cat(2,Gen_lmd_Hist,lmd_Hist);
+                end
+                %%%Calculating Lc experession for different alpha
+                
+                %lmd2=sqrt(lmd);
+                alpha=Line(:,1);
+                [Lc_line]=Lc_Line_ep(Nmp,alpha,lmd2,Gen_lmd_Hist,'L_c expression');
+                
+                xlswrite(filed,[{'Alpha(rate)'},{'Slope'},{'Intercept'}],'Line','A1');
+                xlswrite(filed,Lc_line,'Line','B2');
+                xlswrite(filed,alpha,'Line','A2');
+                
+                alpha_2=sqrt(Line(:,1));
+                [Lc_line_2]=Lc_Line_ep(Nmp,alpha_2,lmd2,Gen_lmd_Hist,'Split L_c expression');
+                xlswrite(filed,[{'Alpha^0.5(rate)'},{'Slope'},{'Intercept'}],'Line','D1');
+                xlswrite(filed,Lc_line_2,'Line','E2');
+                xlswrite(filed,alpha_2,'Line','D2');
+            end
+            
+            
+            function [Pos_serie]=Give_Pos(Nmp,lmd)
+                Nmp_sub=Nmp;
+                ops=-1;
+                Pos_serie=[];
+                
+                while Nmp_sub > 1
+                    ops=ops+1;
+                    P_ops=((lmd^(ops))*exp(0-lmd))/factorial(ops);
+                    stpe=round(Nmp*P_ops);
+                    Nmp_sub=Nmp_sub-stpe;
+                    if and (stpe==0, ops>lmd)
+                        stpe=stpe+Nmp_sub;% observation shows some time it doesent becume zero
+                        Nmp_sub=0;
+                    end
+                    Pos_serie=cat(1,Pos_serie,stpe);
+                    
+                end
+                sum_Pos_serie = sum(Pos_serie);
+                if sum_Pos_serie~=Nmp
+                    if Nmp_sub==1 %% this two if are here to make sure it give list as the same lentgh as Nmp
+                        Pos_serie=cat(1,Pos_serie,1);
+                    elseif sum_Pos_serie>Nmp
+                        Pos_serie(end)=Pos_serie(end)-sum_Pos_serie+Nmp;
+                    end
+                end
+                
+            end
+
+            function [ex_SIS_Hist]=Full_SIS_Hist(SIS_Hist)
+                %SIS_Hist=SIS(:,1:2)
+                
+                size_SIS_Hist=size(SIS_Hist);
+                
+                ex_SIS_Hist=[];
+                for iwe=1:size_SIS_Hist(1)
+                    for jwe=1:SIS_Hist(iwe,2)
+                        ex_SIS_Hist =cat(1,ex_SIS_Hist,SIS_Hist(iwe,1));
+                    end
+                end
+                ex_SIS_Hist = ex_SIS_Hist(randperm(length(ex_SIS_Hist)));
+            end
+            
+
+            function [lmd_Hist]=Monto(Pos_serie,ex_SIS_Hist,SIS_value)
+                size_Pos_serie=size(Pos_serie);
+                lmd_Hist=[];
+                for iya=1:size_Pos_serie(1)
+                    if Pos_serie(iya)>0
+                        if iya==1
+                            y=zeros(Pos_serie(1),1);
+                            lmd_Hist=cat(1,lmd_Hist,y);
+                        else
+
+                            y =datasample(ex_SIS_Hist, (Pos_serie(iya)*(iya-1)) );%
+                            y=reshape(y ,[Pos_serie(iya),(iya-1)]);
+                            y=sum(y,2);
+                            lmd_Hist=cat(1,lmd_Hist,y);
+                            %end
+                        end
+                    end
+                end
+                
+                lmd_Hist=lmd_Hist/SIS_value;
+                lmd_Hist=sort(lmd_Hist,1,'descend');
+                
+                %histogram(lmd_Hist)
+            end
+            
+            function [lmd]=lmd_gen(st_lmd2,sp_lmd2,ed_lmd2)
+                sp_lmd2 = (ed_lmd2-st_lmd2)/sp_lmd2;
+                lmd= st_lmd2:sp_lmd2:ed_lmd2;
+            end
+            
+            
+            function [Lc_line]=Lc_Line_ep(Nmp,alpha,lmd2,Gen_lmd_Hist,fign)
+                size_lmd=size(lmd2);
+                size_alpha=size(alpha);
+                Lc_cont=zeros([size_lmd(2),size_alpha(1)]);
+                %alpha=Line(:,1);
+                Lc_line=[];
+                figure
+                hold on
+                for ket=1:size_alpha(1)
+                    Lc_cont(:,ket)=(Gen_lmd_Hist(round(alpha(ket)*Nmp),:)-mean(Gen_lmd_Hist))';
+                    Lin_fit = polyfit(lmd2,Lc_cont(:,ket),1);
+                    Lc_line=cat(1,Lc_line,Lin_fit);
+                    
+                    y1 = polyval(Lin_fit,lmd2);
+                    
+                    plot(lmd2,Lc_cont(:,ket),'o')
+                    hold on
+                    plot(lmd2,y1)
+                    %hold off
+                end
+                title(fign);
+                saveas(gcf,cat(2,fign,'.pdf'));
+                %savefig(fign);
+            end
             
             
             
@@ -1900,10 +2419,10 @@ classdef NanoFinder < matlab.apps.AppBase
             end
         end
 
-        % Value changed function: ConcurrencySwitch
-        function ConcurrencySwitchValueChanged(app, event)
-            %value = app.ConcurrencySwitch.Value;
-            if strcmp(app.ConcurrencySwitch.Value, 'Yes')
+        % Value changed function: hpCCSwitch
+        function hpCCSwitchValueChanged(app, event)
+            %value = app.hpCCSwitch.Value;
+            if strcmp(app.hpCCSwitch.Value, 'Yes')
                 app.CLamp.Color = [1 1 1] ;
             else
                 app.CLamp.Color = [0.65 0.65 0.65] ;
@@ -1919,20 +2438,20 @@ classdef NanoFinder < matlab.apps.AppBase
 
             % Create UIFigure and hide until all components are created
             app.UIFigure = uifigure('Visible', 'off');
-            app.UIFigure.Position = [100 100 339 679];
+            app.UIFigure.Position = [100 100 345 670];
             app.UIFigure.Name = 'MATLAB App';
 
             % Create SummarySwitchLabel
             app.SummarySwitchLabel = uilabel(app.UIFigure);
             app.SummarySwitchLabel.HorizontalAlignment = 'center';
-            app.SummarySwitchLabel.Position = [17 233 57 30];
+            app.SummarySwitchLabel.Position = [29 226 57 30];
             app.SummarySwitchLabel.Text = 'Summary';
 
             % Create SummarySwitch
             app.SummarySwitch = uiswitch(app.UIFigure, 'slider');
             app.SummarySwitch.Items = {'No', 'Yes'};
             app.SummarySwitch.ValueChangedFcn = createCallbackFcn(app, @SummarySwitchValueChanged, true);
-            app.SummarySwitch.Position = [122 240 52 23];
+            app.SummarySwitch.Position = [134 231 52 23];
             app.SummarySwitch.Value = 'Yes';
 
             % Create RunButton
@@ -1940,187 +2459,214 @@ classdef NanoFinder < matlab.apps.AppBase
             app.RunButton.ButtonPushedFcn = createCallbackFcn(app, @RunButtonPushed, true);
             app.RunButton.FontSize = 14;
             app.RunButton.FontWeight = 'bold';
-            app.RunButton.Position = [85 21 100 100];
+            app.RunButton.Position = [83 26 100 100];
             app.RunButton.Text = 'Run';
 
-            % Create Integration_windowEditFieldLabel
-            app.Integration_windowEditFieldLabel = uilabel(app.UIFigure);
-            app.Integration_windowEditFieldLabel.HorizontalAlignment = 'right';
-            app.Integration_windowEditFieldLabel.Position = [67 579 109 22];
-            app.Integration_windowEditFieldLabel.Text = 'Integration_window';
+            % Create ConversionfactortocountsEditFieldLabel
+            app.ConversionfactortocountsEditFieldLabel = uilabel(app.UIFigure);
+            app.ConversionfactortocountsEditFieldLabel.HorizontalAlignment = 'right';
+            app.ConversionfactortocountsEditFieldLabel.Position = [24 570 152 22];
+            app.ConversionfactortocountsEditFieldLabel.Text = 'Conversion factor to counts';
 
-            % Create Integration_windowEditField
-            app.Integration_windowEditField = uieditfield(app.UIFigure, 'numeric');
-            app.Integration_windowEditField.Position = [191 579 100 22];
+            % Create ConversionfactortocountsEditField
+            app.ConversionfactortocountsEditField = uieditfield(app.UIFigure, 'numeric');
+            app.ConversionfactortocountsEditField.Position = [191 570 100 22];
 
-            % Create Least_countEditFieldLabel
-            app.Least_countEditFieldLabel = uilabel(app.UIFigure);
-            app.Least_countEditFieldLabel.HorizontalAlignment = 'right';
-            app.Least_countEditFieldLabel.Position = [105 539 71 22];
-            app.Least_countEditFieldLabel.Text = 'Least_count';
+            % Create ThresholdlowerboundaryEditFieldLabel
+            app.ThresholdlowerboundaryEditFieldLabel = uilabel(app.UIFigure);
+            app.ThresholdlowerboundaryEditFieldLabel.HorizontalAlignment = 'right';
+            app.ThresholdlowerboundaryEditFieldLabel.Position = [32 530 144 22];
+            app.ThresholdlowerboundaryEditFieldLabel.Text = 'Threshold lower boundary';
 
-            % Create Least_countEditField
-            app.Least_countEditField = uieditfield(app.UIFigure, 'numeric');
-            app.Least_countEditField.Position = [191 539 100 22];
-            app.Least_countEditField.Value = 3.5;
+            % Create ThresholdlowerboundaryEditField
+            app.ThresholdlowerboundaryEditField = uieditfield(app.UIFigure, 'numeric');
+            app.ThresholdlowerboundaryEditField.Position = [191 530 100 22];
+            app.ThresholdlowerboundaryEditField.Value = 3;
 
-            % Create NanoparticletonoiseEditFieldLabel
-            app.NanoparticletonoiseEditFieldLabel = uilabel(app.UIFigure);
-            app.NanoparticletonoiseEditFieldLabel.HorizontalAlignment = 'right';
-            app.NanoparticletonoiseEditFieldLabel.Position = [58 499 118 22];
-            app.NanoparticletonoiseEditFieldLabel.Text = 'Nanoparticle to noise';
+            % Create TruetofalsepositiveratioEditFieldLabel
+            app.TruetofalsepositiveratioEditFieldLabel = uilabel(app.UIFigure);
+            app.TruetofalsepositiveratioEditFieldLabel.HorizontalAlignment = 'right';
+            app.TruetofalsepositiveratioEditFieldLabel.Position = [34 490 142 22];
+            app.TruetofalsepositiveratioEditFieldLabel.Text = 'True to false positive ratio';
 
-            % Create NanoparticletonoiseEditField
-            app.NanoparticletonoiseEditField = uieditfield(app.UIFigure, 'numeric');
-            app.NanoparticletonoiseEditField.Position = [191 499 100 22];
-            app.NanoparticletonoiseEditField.Value = 40;
+            % Create TruetofalsepositiveratioEditField
+            app.TruetofalsepositiveratioEditField = uieditfield(app.UIFigure, 'numeric');
+            app.TruetofalsepositiveratioEditField.Position = [191 490 100 22];
+            app.TruetofalsepositiveratioEditField.Value = 40;
 
-            % Create Smooth_windowEditFieldLabel
-            app.Smooth_windowEditFieldLabel = uilabel(app.UIFigure);
-            app.Smooth_windowEditFieldLabel.HorizontalAlignment = 'right';
-            app.Smooth_windowEditFieldLabel.Position = [82 459 94 22];
-            app.Smooth_windowEditFieldLabel.Text = 'Smooth_window';
+            % Create SmoothingwindowEditFieldLabel
+            app.SmoothingwindowEditFieldLabel = uilabel(app.UIFigure);
+            app.SmoothingwindowEditFieldLabel.HorizontalAlignment = 'right';
+            app.SmoothingwindowEditFieldLabel.Position = [70 450 106 22];
+            app.SmoothingwindowEditFieldLabel.Text = 'Smoothing window';
 
-            % Create Smooth_windowEditField
-            app.Smooth_windowEditField = uieditfield(app.UIFigure, 'numeric');
-            app.Smooth_windowEditField.Position = [191 459 100 22];
-            app.Smooth_windowEditField.Value = 50;
+            % Create SmoothingwindowEditField
+            app.SmoothingwindowEditField = uieditfield(app.UIFigure, 'numeric');
+            app.SmoothingwindowEditField.Position = [191 450 100 22];
+            app.SmoothingwindowEditField.Value = 50;
 
-            % Create StartdatapointrownumberEditFieldLabel
-            app.StartdatapointrownumberEditFieldLabel = uilabel(app.UIFigure);
-            app.StartdatapointrownumberEditFieldLabel.HorizontalAlignment = 'right';
-            app.StartdatapointrownumberEditFieldLabel.Position = [22 419 154 22];
-            app.StartdatapointrownumberEditFieldLabel.Text = 'Start data point row number';
+            % Create StartdatapointEditFieldLabel
+            app.StartdatapointEditFieldLabel = uilabel(app.UIFigure);
+            app.StartdatapointEditFieldLabel.HorizontalAlignment = 'right';
+            app.StartdatapointEditFieldLabel.Position = [89 410 87 22];
+            app.StartdatapointEditFieldLabel.Text = 'Start data point';
 
-            % Create StartdatapointrownumberEditField
-            app.StartdatapointrownumberEditField = uieditfield(app.UIFigure, 'numeric');
-            app.StartdatapointrownumberEditField.Position = [191 419 100 22];
+            % Create StartdatapointEditField
+            app.StartdatapointEditField = uieditfield(app.UIFigure, 'numeric');
+            app.StartdatapointEditField.Position = [191 410 100 22];
 
-            % Create InputdataformatDropDownLabel
-            app.InputdataformatDropDownLabel = uilabel(app.UIFigure);
-            app.InputdataformatDropDownLabel.HorizontalAlignment = 'right';
-            app.InputdataformatDropDownLabel.Position = [81 308 96 22];
-            app.InputdataformatDropDownLabel.Text = 'Input data format';
+            % Create Datafileformath5orcsvDropDownLabel
+            app.Datafileformath5orcsvDropDownLabel = uilabel(app.UIFigure);
+            app.Datafileformath5orcsvDropDownLabel.HorizontalAlignment = 'right';
+            app.Datafileformath5orcsvDropDownLabel.Position = [30 299 147 22];
+            app.Datafileformath5orcsvDropDownLabel.Text = 'Data file format (h5 or csv)';
 
-            % Create InputdataformatDropDown
-            app.InputdataformatDropDown = uidropdown(app.UIFigure);
-            app.InputdataformatDropDown.Items = {'h5', 'CSV', ''};
-            app.InputdataformatDropDown.Position = [192 308 100 22];
-            app.InputdataformatDropDown.Value = 'h5';
+            % Create Datafileformath5orcsvDropDown
+            app.Datafileformath5orcsvDropDown = uidropdown(app.UIFigure);
+            app.Datafileformath5orcsvDropDown.Items = {'HDF5 (h5)', 'CSV'};
+            app.Datafileformath5orcsvDropDown.Position = [192 299 100 22];
+            app.Datafileformath5orcsvDropDown.Value = 'HDF5 (h5)';
 
-            % Create EnddatapointrownumberEditFieldLabel
-            app.EnddatapointrownumberEditFieldLabel = uilabel(app.UIFigure);
-            app.EnddatapointrownumberEditFieldLabel.HorizontalAlignment = 'right';
-            app.EnddatapointrownumberEditFieldLabel.Position = [26 379 150 22];
-            app.EnddatapointrownumberEditFieldLabel.Text = 'End data point row number';
+            % Create EnddatapointEditFieldLabel
+            app.EnddatapointEditFieldLabel = uilabel(app.UIFigure);
+            app.EnddatapointEditFieldLabel.HorizontalAlignment = 'right';
+            app.EnddatapointEditFieldLabel.Position = [93 370 83 22];
+            app.EnddatapointEditFieldLabel.Text = 'End data point';
 
-            % Create EnddatapointrownumberEditField
-            app.EnddatapointrownumberEditField = uieditfield(app.UIFigure, 'numeric');
-            app.EnddatapointrownumberEditField.Position = [191 379 100 22];
+            % Create EnddatapointEditField
+            app.EnddatapointEditField = uieditfield(app.UIFigure, 'numeric');
+            app.EnddatapointEditField.Position = [191 370 100 22];
 
-            % Create NumberofreplicatesEditFieldLabel
-            app.NumberofreplicatesEditFieldLabel = uilabel(app.UIFigure);
-            app.NumberofreplicatesEditFieldLabel.HorizontalAlignment = 'right';
-            app.NumberofreplicatesEditFieldLabel.Position = [60 339 116 22];
-            app.NumberofreplicatesEditFieldLabel.Text = 'Number of replicates';
+            % Create NumberofRunspersampleEditFieldLabel
+            app.NumberofRunspersampleEditFieldLabel = uilabel(app.UIFigure);
+            app.NumberofRunspersampleEditFieldLabel.HorizontalAlignment = 'right';
+            app.NumberofRunspersampleEditFieldLabel.Position = [20 330 156 22];
+            app.NumberofRunspersampleEditFieldLabel.Text = 'Number of Runs per sample';
 
-            % Create NumberofreplicatesEditField
-            app.NumberofreplicatesEditField = uieditfield(app.UIFigure, 'numeric');
-            app.NumberofreplicatesEditField.Position = [191 339 100 22];
-            app.NumberofreplicatesEditField.Value = 1;
+            % Create NumberofRunspersampleEditField
+            app.NumberofRunspersampleEditField = uieditfield(app.UIFigure, 'numeric');
+            app.NumberofRunspersampleEditField.Position = [191 330 100 22];
+            app.NumberofRunspersampleEditField.Value = 1;
 
-            % Create ReadsettingfromfileSwitchLabel
-            app.ReadsettingfromfileSwitchLabel = uilabel(app.UIFigure);
-            app.ReadsettingfromfileSwitchLabel.HorizontalAlignment = 'center';
-            app.ReadsettingfromfileSwitchLabel.Position = [53 624 119 22];
-            app.ReadsettingfromfileSwitchLabel.Text = 'Read setting from file';
+            % Create ReadsettingfromExcelMDEFSwitchLabel
+            app.ReadsettingfromExcelMDEFSwitchLabel = uilabel(app.UIFigure);
+            app.ReadsettingfromExcelMDEFSwitchLabel.HorizontalAlignment = 'center';
+            app.ReadsettingfromExcelMDEFSwitchLabel.Position = [13 615 170 22];
+            app.ReadsettingfromExcelMDEFSwitchLabel.Text = 'Read setting from Excel MDEF';
 
-            % Create ReadsettingfromfileSwitch
-            app.ReadsettingfromfileSwitch = uiswitch(app.UIFigure, 'slider');
-            app.ReadsettingfromfileSwitch.Items = {'No', 'Yes'};
-            app.ReadsettingfromfileSwitch.Position = [205 619 73 32];
-            app.ReadsettingfromfileSwitch.Value = 'No';
+            % Create ReadsettingfromExcelMDEFSwitch
+            app.ReadsettingfromExcelMDEFSwitch = uiswitch(app.UIFigure, 'slider');
+            app.ReadsettingfromExcelMDEFSwitch.Items = {'No', 'Yes'};
+            app.ReadsettingfromExcelMDEFSwitch.Position = [205 610 73 32];
+            app.ReadsettingfromExcelMDEFSwitch.Value = 'No';
 
             % Create Image
             app.Image = uiimage(app.UIFigure);
-            app.Image.Position = [218 21 100 100];
+            app.Image.Position = [216 26 100 100];
             app.Image.ImageSource = 'splash.png';
 
             % Create DLampLabel
             app.DLampLabel = uilabel(app.UIFigure);
             app.DLampLabel.HorizontalAlignment = 'right';
-            app.DLampLabel.Position = [258 278 25 22];
+            app.DLampLabel.Position = [258 269 25 22];
             app.DLampLabel.Text = 'D';
 
             % Create DLamp
             app.DLamp = uilamp(app.UIFigure);
-            app.DLamp.Position = [298 278 20 20];
+            app.DLamp.Position = [298 269 20 20];
             app.DLamp.Color = [0.651 0.651 0.651];
 
             % Create SLampLabel
             app.SLampLabel = uilabel(app.UIFigure);
             app.SLampLabel.HorizontalAlignment = 'right';
-            app.SLampLabel.Position = [258 237 25 22];
+            app.SLampLabel.Position = [258 228 25 22];
             app.SLampLabel.Text = 'S';
 
             % Create SLamp
             app.SLamp = uilamp(app.UIFigure);
-            app.SLamp.Position = [298 236 20 20];
+            app.SLamp.Position = [298 227 20 20];
             app.SLamp.Color = [0.651 0.651 0.651];
 
             % Create CLampLabel
             app.CLampLabel = uilabel(app.UIFigure);
             app.CLampLabel.HorizontalAlignment = 'right';
-            app.CLampLabel.Position = [258 194 25 22];
+            app.CLampLabel.Position = [258 189 25 22];
             app.CLampLabel.Text = 'C';
 
             % Create CLamp
             app.CLamp = uilamp(app.UIFigure);
-            app.CLamp.Position = [298 194 20 20];
+            app.CLamp.Position = [298 189 20 20];
             app.CLamp.Color = [0.651 0.651 0.651];
 
             % Create DetectionSwitchLabel
             app.DetectionSwitchLabel = uilabel(app.UIFigure);
             app.DetectionSwitchLabel.HorizontalAlignment = 'center';
-            app.DetectionSwitchLabel.Position = [16 280 56 22];
+            app.DetectionSwitchLabel.Position = [28 267 56 22];
             app.DetectionSwitchLabel.Text = 'Detection';
 
             % Create DetectionSwitch
             app.DetectionSwitch = uiswitch(app.UIFigure, 'slider');
             app.DetectionSwitch.Items = {'No', 'Yes'};
             app.DetectionSwitch.ValueChangedFcn = createCallbackFcn(app, @DetectionSwitchValueChanged, true);
-            app.DetectionSwitch.Position = [122 277 52 23];
+            app.DetectionSwitch.Position = [134 268 52 23];
             app.DetectionSwitch.Value = 'Yes';
 
-            % Create ConcurrencySwitchLabel
-            app.ConcurrencySwitchLabel = uilabel(app.UIFigure);
-            app.ConcurrencySwitchLabel.HorizontalAlignment = 'center';
-            app.ConcurrencySwitchLabel.Position = [9 190 74 30];
-            app.ConcurrencySwitchLabel.Text = 'Concurrency';
+            % Create hpCCSwitchLabel
+            app.hpCCSwitchLabel = uilabel(app.UIFigure);
+            app.hpCCSwitchLabel.HorizontalAlignment = 'center';
+            app.hpCCSwitchLabel.Position = [21 183 74 30];
+            app.hpCCSwitchLabel.Text = 'hpCC';
 
-            % Create ConcurrencySwitch
-            app.ConcurrencySwitch = uiswitch(app.UIFigure, 'slider');
-            app.ConcurrencySwitch.Items = {'No', 'Yes'};
-            app.ConcurrencySwitch.ValueChangedFcn = createCallbackFcn(app, @ConcurrencySwitchValueChanged, true);
-            app.ConcurrencySwitch.Position = [122 197 52 23];
-            app.ConcurrencySwitch.Value = 'Yes';
+            % Create hpCCSwitch
+            app.hpCCSwitch = uiswitch(app.UIFigure, 'slider');
+            app.hpCCSwitch.Items = {'No', 'Yes'};
+            app.hpCCSwitch.ValueChangedFcn = createCallbackFcn(app, @hpCCSwitchValueChanged, true);
+            app.hpCCSwitch.Position = [134 188 52 23];
+            app.hpCCSwitch.Value = 'Yes';
 
             % Create Lamp
             app.Lamp = uilamp(app.UIFigure);
-            app.Lamp.Position = [239 92 18 18];
+            app.Lamp.Position = [237 97 18 18];
             app.Lamp.Color = [1 1 1];
 
-            % Create ClusteringSwitchLabel
-            app.ClusteringSwitchLabel = uilabel(app.UIFigure);
-            app.ClusteringSwitchLabel.HorizontalAlignment = 'center';
-            app.ClusteringSwitchLabel.Position = [10 145 74 30];
-            app.ClusteringSwitchLabel.Text = 'Clustering';
+            % Create QuantClusteringSwitchLabel
+            app.QuantClusteringSwitchLabel = uilabel(app.UIFigure);
+            app.QuantClusteringSwitchLabel.HorizontalAlignment = 'center';
+            app.QuantClusteringSwitchLabel.Position = [5 143 104 30];
+            app.QuantClusteringSwitchLabel.Text = 'Quant.&Clustering';
 
-            % Create ClusteringSwitch
-            app.ClusteringSwitch = uiswitch(app.UIFigure, 'slider');
-            app.ClusteringSwitch.Items = {'No', 'Yes'};
-            app.ClusteringSwitch.Position = [123 152 52 23];
-            app.ClusteringSwitch.Value = 'Yes';
+            % Create QuantClusteringSwitch
+            app.QuantClusteringSwitch = uiswitch(app.UIFigure, 'slider');
+            app.QuantClusteringSwitch.Items = {'No', 'Yes'};
+            app.QuantClusteringSwitch.Position = [132 146 52 23];
+            app.QuantClusteringSwitch.Value = 'No';
+
+            % Create HCLampLabel
+            app.HCLampLabel = uilabel(app.UIFigure);
+            app.HCLampLabel.HorizontalAlignment = 'right';
+            app.HCLampLabel.Position = [258 146 25 22];
+            app.HCLampLabel.Text = 'HC';
+
+            % Create HCLamp
+            app.HCLamp = uilamp(app.UIFigure);
+            app.HCLamp.Position = [298 146 20 20];
+            app.HCLamp.Color = [0.651 0.651 0.651];
+
+            % Create SISLampLabel
+            app.SISLampLabel = uilabel(app.UIFigure);
+            app.SISLampLabel.HorizontalAlignment = 'right';
+            app.SISLampLabel.Position = [201 268 41 22];
+            app.SISLampLabel.Text = 'SIS';
+
+            % Create SISLamp
+            app.SISLamp = uilamp(app.UIFigure);
+            app.SISLamp.Position = [245 268 20 20];
+            app.SISLamp.Color = [0.651 0.651 0.651];
+
+            % Create NanoFinder556Label
+            app.NanoFinder556Label = uilabel(app.UIFigure);
+            app.NanoFinder556Label.Position = [216 5 98 22];
+            app.NanoFinder556Label.Text = 'NanoFinder 5.5.6';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
@@ -2152,4 +2698,3 @@ classdef NanoFinder < matlab.apps.AppBase
         end
     end
 end
-
