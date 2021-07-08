@@ -5,51 +5,51 @@
     % Version NanoFinder V5.6
     % Open access licence by ETH Zürich
     
-    classdef NanoFinder < matlab.apps.AppBase
+classdef NanoFinder < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
-        SummarySwitchLabel              matlab.ui.control.Label
-        SummarySwitch                   matlab.ui.control.Switch
-        RunButton                       matlab.ui.control.Button
-        ConversionfactortocountsEditFieldLabel  matlab.ui.control.Label
-        ConversionfactortocountsEditField  matlab.ui.control.NumericEditField
-        ThresholdlowerboundaryEditFieldLabel  matlab.ui.control.Label
-        ThresholdlowerboundaryEditField  matlab.ui.control.NumericEditField
-        TruetofalsepositiveratioEditFieldLabel  matlab.ui.control.Label
-        TruetofalsepositiveratioEditField  matlab.ui.control.NumericEditField
-        SmoothingwindowEditFieldLabel   matlab.ui.control.Label
-        SmoothingwindowEditField        matlab.ui.control.NumericEditField
-        StartdatapointEditFieldLabel    matlab.ui.control.Label
-        StartdatapointEditField         matlab.ui.control.NumericEditField
-        Datafileformath5orcsvDropDownLabel  matlab.ui.control.Label
-        Datafileformath5orcsvDropDown   matlab.ui.control.DropDown
-        EnddatapointEditFieldLabel      matlab.ui.control.Label
-        EnddatapointEditField           matlab.ui.control.NumericEditField
-        NumberofRunspersampleEditFieldLabel  matlab.ui.control.Label
-        NumberofRunspersampleEditField  matlab.ui.control.NumericEditField
-        ReadsettingfromExcelMDEFSwitchLabel  matlab.ui.control.Label
-        ReadsettingfromExcelMDEFSwitch  matlab.ui.control.Switch
-        Image                           matlab.ui.control.Image
-        DLampLabel                      matlab.ui.control.Label
-        DLamp                           matlab.ui.control.Lamp
-        SLampLabel                      matlab.ui.control.Label
-        SLamp                           matlab.ui.control.Lamp
-        CLampLabel                      matlab.ui.control.Label
-        CLamp                           matlab.ui.control.Lamp
-        DetectionSwitchLabel            matlab.ui.control.Label
-        DetectionSwitch                 matlab.ui.control.Switch
-        hpCCSwitchLabel                 matlab.ui.control.Label
-        hpCCSwitch                      matlab.ui.control.Switch
-        Lamp                            matlab.ui.control.Lamp
-        QuantClusteringSwitchLabel      matlab.ui.control.Label
-        QuantClusteringSwitch           matlab.ui.control.Switch
-        HCLampLabel                     matlab.ui.control.Label
-        HCLamp                          matlab.ui.control.Lamp
-        SISLampLabel                    matlab.ui.control.Label
+        NanoFinder558Label              matlab.ui.control.Label
         SISLamp                         matlab.ui.control.Lamp
-        NanoFinder556Label              matlab.ui.control.Label
+        SISLampLabel                    matlab.ui.control.Label
+        HCLamp                          matlab.ui.control.Lamp
+        HCLampLabel                     matlab.ui.control.Label
+        QuantClusteringSwitch           matlab.ui.control.Switch
+        QuantClusteringSwitchLabel      matlab.ui.control.Label
+        Lamp                            matlab.ui.control.Lamp
+        hpCCSwitch                      matlab.ui.control.Switch
+        hpCCSwitchLabel                 matlab.ui.control.Label
+        DetectionSwitch                 matlab.ui.control.Switch
+        DetectionSwitchLabel            matlab.ui.control.Label
+        CLamp                           matlab.ui.control.Lamp
+        CLampLabel                      matlab.ui.control.Label
+        SLamp                           matlab.ui.control.Lamp
+        SLampLabel                      matlab.ui.control.Label
+        DLamp                           matlab.ui.control.Lamp
+        DLampLabel                      matlab.ui.control.Label
+        Image                           matlab.ui.control.Image
+        ReadsettingfromExcelMDEFSwitch  matlab.ui.control.Switch
+        ReadsettingfromExcelMDEFSwitchLabel  matlab.ui.control.Label
+        NumberofRunspersampleEditField  matlab.ui.control.NumericEditField
+        NumberofRunspersampleEditFieldLabel  matlab.ui.control.Label
+        EnddatapointEditField           matlab.ui.control.NumericEditField
+        EnddatapointEditFieldLabel      matlab.ui.control.Label
+        Datafileformath5orcsvDropDown   matlab.ui.control.DropDown
+        Datafileformath5orcsvDropDownLabel  matlab.ui.control.Label
+        StartdatapointEditField         matlab.ui.control.NumericEditField
+        StartdatapointEditFieldLabel    matlab.ui.control.Label
+        SmoothingwindowEditField        matlab.ui.control.NumericEditField
+        SmoothingwindowEditFieldLabel   matlab.ui.control.Label
+        TruetofalsepositiveratioEditField  matlab.ui.control.NumericEditField
+        TruetofalsepositiveratioEditFieldLabel  matlab.ui.control.Label
+        ThresholdlowerboundaryEditField  matlab.ui.control.NumericEditField
+        ThresholdlowerboundaryEditFieldLabel  matlab.ui.control.Label
+        ConversionfactortocountsEditField  matlab.ui.control.NumericEditField
+        ConversionfactortocountsEditFieldLabel  matlab.ui.control.Label
+        RunButton                       matlab.ui.control.Button
+        SummarySwitch                   matlab.ui.control.Switch
+        SummarySwitchLabel              matlab.ui.control.Label
     end
 
     %Kamyar Mehrabi 2021.03.15
@@ -69,7 +69,7 @@
             app.Lamp.Color = [1 0 0] ;
             
             tic
-            app.NanoFinder556Label.Text
+            app.NanoFinder558Label.Text
             [filed,path] = uigetfile('../*.xlsx');
             cd (path)
             
@@ -294,10 +294,10 @@
                 for ig=1:lsize(1)+1 % Changed on 2021.06.21
                     if ig==lsize(1)+1
                         gg=lsize(1);
-                        sd=rd(1+ceil(2*size_data(1)*nl(gg,1)):end,:,:); %%% Changed on 2020.07.07
+                        sd=rd(:,:,:); %%% Changed on 2020.07.07
                     else
                         gg=ig;
-                        sd=rd(1+ceil(2*size_data(1)*nl(gg,1)*Goldnum):end,:,:); %%% Changed on 2020.07.07
+                        sd=rd(1+ceil(2*size_data(1)* nl(gg,1)*Goldnum):end,:,:); %%% Changed on 2020.07.07
                     end
                     
                     Y(1)=Y(1)+(100/(lsize(1)+1)/2)
@@ -1156,7 +1156,7 @@
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%End process lines
             
-            xlswrite(filed,{app.NanoFinder556Label.Text},'Read me AIO','B15');
+            xlswrite(filed,{app.NanoFinder558Label.Text},'Read me AIO','B15');
             xlswrite(filed,{'total time (s)'},'Read me AIO','A14');
             xlswrite(filed,toc,'Read me AIO','B14');
             
@@ -2663,10 +2663,10 @@
             app.SISLamp.Position = [245 268 20 20];
             app.SISLamp.Color = [0.651 0.651 0.651];
 
-            % Create NanoFinder556Label
-            app.NanoFinder556Label = uilabel(app.UIFigure);
-            app.NanoFinder556Label.Position = [216 5 98 22];
-            app.NanoFinder556Label.Text = 'NanoFinder 5.5.6';
+            % Create NanoFinder558Label
+            app.NanoFinder558Label = uilabel(app.UIFigure);
+            app.NanoFinder558Label.Position = [216 5 98 22];
+            app.NanoFinder558Label.Text = 'NanoFinder 5.5.8';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
