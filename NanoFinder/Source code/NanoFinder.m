@@ -10,7 +10,7 @@ classdef NanoFinder < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
-        NanoFinder558Label              matlab.ui.control.Label
+        NanoFinder559Label              matlab.ui.control.Label
         SISLamp                         matlab.ui.control.Lamp
         SISLampLabel                    matlab.ui.control.Label
         HCLamp                          matlab.ui.control.Lamp
@@ -52,7 +52,7 @@ classdef NanoFinder < matlab.apps.AppBase
         SummarySwitchLabel              matlab.ui.control.Label
     end
 
-    %Kamyar Mehrabi 2021.03.15
+    %Kamyar Mehrabi 2021.11.12
 
     % Callbacks that handle component events
     methods (Access = private)
@@ -69,7 +69,7 @@ classdef NanoFinder < matlab.apps.AppBase
             app.Lamp.Color = [1 0 0] ;
             
             tic
-            app.NanoFinder558Label.Text
+            app.NanoFinder559Label.Text
             [filed,path] = uigetfile('../*.xlsx');
             cd (path)
             
@@ -1156,7 +1156,7 @@ classdef NanoFinder < matlab.apps.AppBase
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%End process lines
             
-            xlswrite(filed,{app.NanoFinder558Label.Text},'Read me AIO','B15');
+            xlswrite(filed,{app.NanoFinder559Label.Text},'Read me AIO','B15');
             xlswrite(filed,{'total time (s)'},'Read me AIO','A14');
             xlswrite(filed,toc,'Read me AIO','B14');
             
@@ -1739,7 +1739,7 @@ classdef NanoFinder < matlab.apps.AppBase
                         for y=1:sizeb
                             jk=read_list(List_2,row,col,2);
                             if and(motherNP==a(xa,1)+b(y,1),jk>0)
-                                subtract=round(a(xa,2)*b(y,2)/sizedata,0);
+                                subtract=round((jk+a(xa,2))*(jk+b(y,2))/sizedata,0);
                                 if subtract<chans % the fact that a and b was existiong already promissing that by chance at least one from ther both happen cuncurrent so 'subtract' should  be at least 1
                                     subtract=chans;
                                 end
@@ -2663,10 +2663,10 @@ classdef NanoFinder < matlab.apps.AppBase
             app.SISLamp.Position = [245 268 20 20];
             app.SISLamp.Color = [0.651 0.651 0.651];
 
-            % Create NanoFinder558Label
-            app.NanoFinder558Label = uilabel(app.UIFigure);
-            app.NanoFinder558Label.Position = [216 5 98 22];
-            app.NanoFinder558Label.Text = 'NanoFinder 5.5.8';
+            % Create NanoFinder559Label
+            app.NanoFinder559Label = uilabel(app.UIFigure);
+            app.NanoFinder559Label.Position = [216 5 98 22];
+            app.NanoFinder559Label.Text = 'NanoFinder 5.5.9';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
