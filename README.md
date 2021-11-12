@@ -25,7 +25,7 @@ b)	Perform hierarchical clustering analysis of mmNP signals; discovery of conser
 c)	Quantify detectable PNCs of both smNPs and mmNPs
 d)	Report smNP and mmNP data
 
-Except calibration step which needed for user to enter values from their calculation or using the complimentary software in our package DropCalib (release in 2021) the rest of the calculation done centrally in this program. Unlike the calibration steps which is user dependent and sometime need more care. The rest of the process could be done on an autonomous fashion as you will see here.
+Except calibration step which needed for user to enter values from their calculation or using the complimentary software in our package DropCalib (release in 2022) the rest of the calculation done centrally in this program. Unlike the calibration steps which is user dependent and sometime need more care. The rest of the process could be done on an autonomous fashion as you will see here.
 
 2.	Installation
 
